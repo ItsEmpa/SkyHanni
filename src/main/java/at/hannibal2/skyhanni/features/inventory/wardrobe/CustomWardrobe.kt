@@ -33,6 +33,7 @@ import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import java.awt.Color
+import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds
 
 @SkyHanniModule
@@ -46,6 +47,9 @@ object CustomWardrobe {
     private var waitingForInventoryUpdate = false
     private var autoScale: Double? = null
 
+    private var lastScreenSize: Pair<Int, Int>? = null
+    private var lastRenderableSize: Pair<Int, Int>? = null
+
     @SubscribeEvent
     fun onGuiRender(event: GuiContainerEvent.BeforeDraw) {
         if (!isEnabled() || editMode) return
@@ -55,13 +59,11 @@ object CustomWardrobe {
             displayRenderable ?: return
         }
 
-        if (autoScale == null) {
-            val unscaledRenderableWidth = renderable.width / currentScale
-            autoScale = 100 * ((gui.width * 0.9) / unscaledRenderableWidth)
-            val newWidth = (unscaledRenderableWidth * currentScale).toInt()
-            if (newWidth > gui.width) {
-                autoScale = 100 * (0.98 * gui.width) / (unscaledRenderableWidth * config.spacing.globalScale / 100)
-            }
+        val screenSize = gui.width to gui.height
+        val renderableSize = renderable.width to renderable.height
+
+        if (hasChangedScreenSize(screenSize, renderableSize)) {
+            updateScreenSize(screenSize, renderableSize)
             update()
             return
         }
@@ -111,6 +113,49 @@ object CustomWardrobe {
 
     private fun update() {
         displayRenderable = createRenderables()
+    }
+
+    private fun hasChangedScreenSize(newScreen: Pair<Int, Int>, newRenderable: Pair<Int, Int>): Boolean {
+        val (screenSize, renderableSize) = lastScreenSize to lastRenderableSize
+        if (screenSize == null || renderableSize == null) {
+            lastScreenSize = newScreen
+            lastRenderableSize = newRenderable
+            return true
+        }
+        if (newScreen != screenSize) {
+            lastScreenSize = newScreen
+            lastRenderableSize = newRenderable
+            return true
+        } else {
+            val firstThing = renderableSize.first.toDouble() / newRenderable.first
+            if (firstThing < 0.95 || firstThing > 1.05) {
+                lastRenderableSize = newRenderable
+                return true
+            }
+            val secondThing = renderableSize.second.toDouble() / newRenderable.second
+            if (secondThing < 0.95 || secondThing > 1.05) {
+                lastRenderableSize = newRenderable
+                return true
+            }
+            return false
+        }
+    }
+
+    private fun updateScreenSize(gui: Pair<Int, Int>, renderable: Pair<Int, Int>) {
+        val unscaledRenderableWidth = renderable.first / currentScale
+        val unscaledRenderableHeight = renderable.second / currentScale
+        val autoScaleWidth = 100 * ((gui.first * 0.9) / unscaledRenderableWidth)
+        val autoScaleHeight = 100 * ((gui.second * 0.9) / unscaledRenderableHeight)
+        autoScale = min(autoScaleWidth, autoScaleHeight)
+        val newWidth = (unscaledRenderableWidth * currentScale).toInt()
+        val newHeight = (unscaledRenderableHeight * currentScale).toInt()
+        if (newWidth > gui.first || newHeight > gui.second) {
+            val secondAutoScaleWidth =
+                100 * (0.98 * gui.first) / (unscaledRenderableWidth * config.spacing.globalScale / 100)
+            val secondAutoScaleHeight =
+                100 * (0.98 * gui.second) / (unscaledRenderableHeight * config.spacing.globalScale / 100)
+            autoScale = min(secondAutoScaleWidth, secondAutoScaleHeight)
+        }
     }
 
     private val currentScale get() = ((autoScale ?: 100.0) / 100.0) * (config.spacing.globalScale / 100.0)
