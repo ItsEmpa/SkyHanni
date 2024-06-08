@@ -133,4 +133,13 @@ public class SpacingConfig {
     )
     public Property<Integer> buttonHeight = Property.of(20);
 
+    @Expose
+    @ConfigOption(name = "Background Padding", desc = "Space between the edges of the background and the slots.")
+    @ConfigEditorSlider(
+        minValue = 1,
+        maxValue = 20,
+        minStep = 1
+    )
+    public Property<Integer> backgroundPadding = Property.of(10);
+
 }
