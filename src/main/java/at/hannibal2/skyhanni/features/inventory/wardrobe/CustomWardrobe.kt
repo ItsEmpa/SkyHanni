@@ -2,6 +2,7 @@ package at.hannibal2.skyhanni.features.inventory.wardrobe
 
 import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.config.core.config.Position
+import at.hannibal2.skyhanni.events.ConfigLoadEvent
 import at.hannibal2.skyhanni.events.GuiContainerEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.InventoryCloseEvent
@@ -19,6 +20,7 @@ import at.hannibal2.skyhanni.utils.ColorUtils.darker
 import at.hannibal2.skyhanni.utils.ColorUtils.toChromaColor
 import at.hannibal2.skyhanni.utils.ColorUtils.toChromaColorInt
 import at.hannibal2.skyhanni.utils.ColorUtils.withAlpha
+import at.hannibal2.skyhanni.utils.ConditionalUtils
 import at.hannibal2.skyhanni.utils.ConfigUtils.jumpToEditor
 import at.hannibal2.skyhanni.utils.DelayedRun
 import at.hannibal2.skyhanni.utils.EntityUtils.getFakePlayer
@@ -111,6 +113,28 @@ object CustomWardrobe {
     }
 
     @SubscribeEvent
+    fun onConfigUpdate(event: ConfigLoadEvent) {
+        ConditionalUtils.onToggle(
+            config.spacing.globalScale,
+            config.spacing.outlineThickness,
+            config.spacing.outlineBlur,
+            config.spacing.slotWidth,
+            config.spacing.slotHeight,
+            config.spacing.playerScale,
+            config.spacing.maxPlayersPerRow,
+            config.spacing.horizontalSpacing,
+            config.spacing.verticalSpacing,
+            config.spacing.buttonSlotsVerticalSpacing,
+            config.spacing.buttonHorizontalSpacing,
+            config.spacing.buttonVerticalSpacing,
+            config.spacing.buttonWidth,
+            config.spacing.buttonHeight
+        ) {
+            currentMaxSize = null
+        }
+    }
+
+    @SubscribeEvent
     fun onInventoryUpdate(event: InventoryUpdatedEvent) {
         if (!isEnabled() || editMode) return
         update()
@@ -122,7 +146,7 @@ object CustomWardrobe {
 
     private fun updateScreenSize(gui: Pair<Int, Int>): Boolean {
         val renderable = currentMaxSize ?: run {
-            activeScale = config.spacing.globalScale
+            activeScale = config.spacing.globalScale.get()
             update()
             return true
         }
@@ -139,7 +163,7 @@ object CustomWardrobe {
         val maxScale = min(autoScaleWidth, autoScaleHeight).toInt()
         println("maxScale: $maxScale")
 
-        activeScale = config.spacing.globalScale.coerceAtMost(maxScale)
+        activeScale = config.spacing.globalScale.get().coerceAtMost(maxScale)
         println("activeScale: $activeScale")
         if (activeScale != previousActiveScale) {
             update()
@@ -176,13 +200,13 @@ object CustomWardrobe {
             return warningRenderable
         }
 
-        val maxPlayersPerRow = config.spacing.maxPlayersPerRow
+        val maxPlayersPerRow = config.spacing.maxPlayersPerRow.get()
         val maxPlayersRows = ((MAX_SLOT_PER_PAGE * MAX_PAGES - 1) / maxPlayersPerRow) + 1
-        val containerWidth = (config.spacing.slotWidth * (activeScale / 100.0)).toInt()
-        val containerHeight = (config.spacing.slotHeight * (activeScale / 100.0)).toInt()
-        val playerWidth = (containerWidth * (config.spacing.playerScale / 100.0))
-        val horizontalSpacing = (config.spacing.horizontalSpacing * (activeScale / 100.0)).toInt()
-        val verticalSpacing = (config.spacing.verticalSpacing * (activeScale / 100.0)).toInt()
+        val containerWidth = (config.spacing.slotWidth.get() * (activeScale / 100.0)).toInt()
+        val containerHeight = (config.spacing.slotHeight.get() * (activeScale / 100.0)).toInt()
+        val playerWidth = (containerWidth * (config.spacing.playerScale.get() / 100.0))
+        val horizontalSpacing = (config.spacing.horizontalSpacing.get() * (activeScale / 100.0)).toInt()
+        val verticalSpacing = (config.spacing.verticalSpacing.get() * (activeScale / 100.0)).toInt()
 
         var maxRenderableWidth = maxPlayersPerRow * containerWidth + (maxPlayersPerRow - 1) * horizontalSpacing
         var maxRenderableHeight = maxPlayersRows * containerHeight + (maxPlayersRows - 1) * verticalSpacing
@@ -225,8 +249,8 @@ object CustomWardrobe {
                     armorTooltipRenderable.invoke(),
                     topLayerRenderable = addSlotHoverableButtons(slot),
                     hoveredColor = slot.getSlotColor(),
-                    borderOutlineThickness = config.spacing.outlineThickness,
-                    borderOutlineBlur = config.spacing.outlineBlur,
+                    borderOutlineThickness = config.spacing.outlineThickness.get(),
+                    borderOutlineBlur = config.spacing.outlineBlur.get(),
                     onClick = { slot.clickSlot() }
                 )
 
@@ -264,7 +288,7 @@ object CustomWardrobe {
         val button = addButtons()
 
         if (button.width > maxRenderableWidth) maxRenderableWidth = button.width
-        maxRenderableHeight += button.height + config.spacing.buttonSlotsVerticalSpacing
+        maxRenderableHeight += button.height + config.spacing.buttonSlotsVerticalSpacing.get()
 
         val borderPadding = 10
         maxRenderableWidth += 2 * borderPadding
@@ -275,7 +299,7 @@ object CustomWardrobe {
             Renderable.doubleLayered(
                 Renderable.verticalContainer(
                     listOf(allSlotsRenderable, button),
-                    config.spacing.buttonSlotsVerticalSpacing,
+                    config.spacing.buttonSlotsVerticalSpacing.get(),
                     horizontalAlign = HorizontalAlignment.CENTER
                 ),
                 Renderable.clickable(
@@ -308,7 +332,7 @@ object CustomWardrobe {
 
     private fun addButtons(): Renderable {
         val (horizontalSpacing, verticalSpacing) = with(config.spacing) {
-            buttonHorizontalSpacing * (activeScale / 100.0) to buttonVerticalSpacing * (activeScale / 100.0)
+            buttonHorizontalSpacing.get() * (activeScale / 100.0) to buttonVerticalSpacing.get() * (activeScale / 100.0)
         }
 
         val backButton = createLabeledButton(
@@ -429,8 +453,8 @@ object CustomWardrobe {
         unhoveredColor: Color = hoveredColor.darker(0.57),
         onClick: () -> Unit
     ): Renderable {
-        val buttonWidth = (config.spacing.buttonWidth * (activeScale / 100.0)).toInt()
-        val buttonHeight = (config.spacing.buttonHeight * (activeScale / 100.0)).toInt()
+        val buttonWidth = (config.spacing.buttonWidth.get() * (activeScale / 100.0)).toInt()
+        val buttonHeight = (config.spacing.buttonHeight.get() * (activeScale / 100.0)).toInt()
         val textScale = (activeScale / 100.0)
 
         val renderable = Renderable.hoverable(
