@@ -6,6 +6,8 @@ import at.hannibal2.skyhanni.events.GuiContainerEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.InventoryCloseEvent
 import at.hannibal2.skyhanni.events.InventoryUpdatedEvent
+import at.hannibal2.skyhanni.features.inventory.wardrobe.WardrobeAPI.MAX_PAGES
+import at.hannibal2.skyhanni.features.inventory.wardrobe.WardrobeAPI.MAX_SLOT_PER_PAGE
 import at.hannibal2.skyhanni.features.inventory.wardrobe.WardrobeAPI.createWardrobePriceLore
 import at.hannibal2.skyhanni.features.inventory.wardrobe.WardrobeAPI.currentPage
 import at.hannibal2.skyhanni.features.inventory.wardrobe.WardrobeAPI.currentWardrobeSlot
@@ -45,10 +47,10 @@ object CustomWardrobe {
     private var inventoryButton: Renderable? = null
     private var editMode = false
     private var waitingForInventoryUpdate = false
-    private var activeScale: Int = 100
 
+    private var activeScale: Int = 100
+    private var currentMaxSize: Pair<Int, Int>? = null
     private var lastScreenSize: Pair<Int, Int>? = null
-    private var lastRenderableSize: Pair<Int, Int>? = null
 
     @SubscribeEvent
     fun onGuiRender(event: GuiContainerEvent.BeforeDraw) {
@@ -60,13 +62,10 @@ object CustomWardrobe {
         }
 
         val screenSize = gui.width to gui.height
-        val renderableSize = renderable.width to renderable.height
 
-        println(activeScale)
-        if (screenSize != lastScreenSize || renderableSize != lastRenderableSize) {
+        if (screenSize != lastScreenSize) {
             lastScreenSize = screenSize
-            lastRenderableSize = renderableSize
-            val didUpdate = updateScreenSize(screenSize, renderableSize)
+            val didUpdate = updateScreenSize(screenSize)
             if (didUpdate) return
         }
 
@@ -120,7 +119,12 @@ object CustomWardrobe {
         displayRenderable = createRenderables()
     }
 
-    private fun updateScreenSize(gui: Pair<Int, Int>, renderable: Pair<Int, Int>): Boolean {
+    private fun updateScreenSize(gui: Pair<Int, Int>): Boolean {
+        val renderable = currentMaxSize ?: run {
+            activeScale = config.spacing.globalScale
+            update()
+            return true
+        }
         val previousActiveScale = activeScale
         println("previousActiveScale: $previousActiveScale")
         val unscaledRenderableWidth = 100 * (renderable.first / activeScale.toDouble())
@@ -172,11 +176,15 @@ object CustomWardrobe {
         }
 
         val maxPlayersPerRow = config.spacing.maxPlayersPerRow
+        val maxPlayersRows = ((MAX_SLOT_PER_PAGE * MAX_PAGES - 1) / maxPlayersPerRow) + 1
         val containerWidth = (config.spacing.slotWidth * (activeScale / 100.0)).toInt()
         val containerHeight = (config.spacing.slotHeight * (activeScale / 100.0)).toInt()
         val playerWidth = (containerWidth * (config.spacing.playerScale / 100.0))
         val horizontalSpacing = (config.spacing.horizontalSpacing * (activeScale / 100.0)).toInt()
         val verticalSpacing = (config.spacing.verticalSpacing * (activeScale / 100.0)).toInt()
+
+        var maxRenderableWidth = maxPlayersPerRow * containerWidth + (maxPlayersPerRow - 1) * horizontalSpacing
+        var maxRenderableHeight = maxPlayersRows * containerHeight + (maxPlayersRows - 1) * verticalSpacing
 
         val chunkedList = list.chunked(maxPlayersPerRow)
 
@@ -254,6 +262,14 @@ object CustomWardrobe {
 
         val button = addButtons()
 
+        if (button.width > maxRenderableWidth) maxRenderableWidth = button.width
+        maxRenderableHeight += button.height + config.spacing.buttonSlotsVerticalSpacing
+
+        val borderPadding = 10
+        maxRenderableWidth += 2 * borderPadding
+        maxRenderableHeight += 2 * borderPadding
+        currentMaxSize = maxRenderableWidth to maxRenderableHeight
+
         val fullRenderable = Renderable.drawInsideRoundedRect(
             Renderable.doubleLayered(
                 Renderable.verticalContainer(
@@ -277,7 +293,7 @@ object CustomWardrobe {
                 blockBottomHover = false
             ),
             config.color.backgroundColor.toChromaColor(),
-            padding = 10
+            padding = borderPadding
         )
         return fullRenderable
     }

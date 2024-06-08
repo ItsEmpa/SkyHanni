@@ -47,6 +47,8 @@ object WardrobeAPI {
     private const val FIRST_CHESTPLATE_SLOT = 9
     private const val FIRST_LEGGINGS_SLOT = 18
     private const val FIRST_BOOTS_SLOT = 27
+    const val MAX_SLOT_PER_PAGE = 9
+    const val MAX_PAGES = 2
 
     var wardrobeSlots = listOf<WardrobeSlot>()
     var inCustomWardrobe = false
@@ -125,13 +127,10 @@ object WardrobeAPI {
 
     init {
         val list = mutableListOf<WardrobeSlot>()
-        val slotsPerPage = 9
-        val maxPages = 2
-
         var id = 0
 
-        for (page in 1..maxPages) {
-            for (slot in 0 until slotsPerPage) {
+        for (page in 1..MAX_PAGES) {
+            for (slot in 0 until MAX_SLOT_PER_PAGE) {
                 val inventorySlot = FIRST_SLOT + slot
                 val helmetSlot = FIRST_HELMET_SLOT + slot
                 val chestplateSlot = FIRST_CHESTPLATE_SLOT + slot
