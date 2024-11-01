@@ -55,7 +55,7 @@ class SkyHanniMod {
         loadModule(this)
         LoadedModules.modules.forEach { loadModule(it) }
 
-        loadModule(CrimsonIsleReputationHelper(this))
+                 loadModule(CrimsonIsleReputationHelper(this))
 
          SkyHanniEvents.init(modules)
 
