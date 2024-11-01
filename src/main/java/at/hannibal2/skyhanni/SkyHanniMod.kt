@@ -50,12 +50,13 @@ class SkyHanniMod {
     fun preInit(event: FMLPreInitializationEvent?) {
         checkIfNeuIsLoaded()
 
-        HotswapSupport.load()
+HotswapSupport.load()
 
-        loadModule(this)
+             loadModule(this)
+        loadModule(CrimsonIsleReputationHelper(this))
         LoadedModules.modules.forEach { loadModule(it) }
 
-                 loadModule(CrimsonIsleReputationHelper(this))
+
 
          SkyHanniEvents.init(modules)
 
