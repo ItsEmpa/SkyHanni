@@ -2,6 +2,7 @@ package at.hannibal2.skyhanni.utils
 
 import kotlin.time.Duration
 
+
 class GenericWrapper<T>(val it: T) {
     companion object {
         @JvmStatic

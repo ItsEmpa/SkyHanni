@@ -1,7 +1,9 @@
 package at.hannibal2.skyhanni.config.storage;
 
 import at.hannibal2.skyhanni.api.HotmAPI;
-import at.hannibal2.skyhanni.api.SkillAPI;
+import at.hannibal2.skyhanni.api.skill.NewSkillInfo;
+import at.hannibal2.skyhanni.api.skill.OldSkillInfo;
+import at.hannibal2.skyhanni.api.skill.SkillXPInfo;
 import at.hannibal2.skyhanni.data.IslandType;
 import at.hannibal2.skyhanni.data.MaxwellAPI;
 import at.hannibal2.skyhanni.data.jsonobjects.local.HotmTree;
@@ -44,6 +46,7 @@ import at.hannibal2.skyhanni.features.rift.area.westvillage.VerminTracker;
 import at.hannibal2.skyhanni.features.rift.area.westvillage.kloon.KloonTerminal;
 import at.hannibal2.skyhanni.features.skillprogress.SkillType;
 import at.hannibal2.skyhanni.features.slayer.SlayerProfitTracker;
+import at.hannibal2.skyhanni.utils.CollectionUtils;
 import at.hannibal2.skyhanni.utils.GenericWrapper;
 import at.hannibal2.skyhanni.utils.LorenzRarity;
 import at.hannibal2.skyhanni.utils.LorenzVec;
@@ -56,6 +59,7 @@ import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -744,7 +748,7 @@ public class ProfileSpecificStorage {
     }
 
     @Expose
-    public Map<SkillType, SkillAPI.SkillInfo> skillData = new HashMap<>();
+    public Map<SkillType, NewSkillInfo> skillData = new EnumMap<>(SkillType.class);
 
     @Expose
     public WardrobeStorage wardrobe = new WardrobeStorage();

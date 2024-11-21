@@ -1,13 +1,16 @@
 package at.hannibal2.skyhanni.features.skillprogress
 
 import at.hannibal2.skyhanni.SkyHanniMod
-import at.hannibal2.skyhanni.api.SkillAPI
-import at.hannibal2.skyhanni.api.SkillAPI.activeSkill
-import at.hannibal2.skyhanni.api.SkillAPI.defaultSkillCap
-import at.hannibal2.skyhanni.api.SkillAPI.lastUpdate
-import at.hannibal2.skyhanni.api.SkillAPI.oldSkillInfoMap
-import at.hannibal2.skyhanni.api.SkillAPI.showDisplay
-import at.hannibal2.skyhanni.api.SkillAPI.skillXPInfoMap
+import at.hannibal2.skyhanni.api.skill.SkillAPI
+import at.hannibal2.skyhanni.api.skill.SkillAPI.activeSkill
+import at.hannibal2.skyhanni.api.skill.SkillAPI.defaultSkillCap
+import at.hannibal2.skyhanni.api.skill.SkillAPI.lastUpdate
+import at.hannibal2.skyhanni.api.skill.SkillAPI.oldOldSkillInfoMap
+import at.hannibal2.skyhanni.api.skill.SkillAPI.showDisplay
+import at.hannibal2.skyhanni.api.skill.SkillAPI.skillXPInfoMap
+import at.hannibal2.skyhanni.api.skill.OldSkillInfo
+import at.hannibal2.skyhanni.api.skill.SkillUtil
+import at.hannibal2.skyhanni.api.skill.SkillXPInfo
 import at.hannibal2.skyhanni.config.features.skillprogress.SkillProgressConfig
 import at.hannibal2.skyhanni.events.ActionBarUpdateEvent
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
@@ -15,9 +18,9 @@ import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
 import at.hannibal2.skyhanni.events.SecondPassedEvent
 import at.hannibal2.skyhanni.events.SkillOverflowLevelUpEvent
-import at.hannibal2.skyhanni.features.skillprogress.SkillUtil.XP_NEEDED_FOR_50
-import at.hannibal2.skyhanni.features.skillprogress.SkillUtil.XP_NEEDED_FOR_60
-import at.hannibal2.skyhanni.features.skillprogress.SkillUtil.calculateSkillLevel
+import at.hannibal2.skyhanni.api.skill.SkillUtil.XP_NEEDED_FOR_50
+import at.hannibal2.skyhanni.api.skill.SkillUtil.XP_NEEDED_FOR_60
+import at.hannibal2.skyhanni.api.skill.SkillUtil.calculateSkillLevel
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils.chat
 import at.hannibal2.skyhanni.utils.ConditionalUtils.onToggle
@@ -165,7 +168,7 @@ object SkillProgress {
         val skillName = event.skill.displayName
         val oldLevel = event.oldLevel
         val newLevel = event.newLevel
-        val skill = SkillAPI.storage?.get(event.skill) ?: return
+        val skill = SkillAPI.oldStorage?.get(event.skill) ?: return
         val goalReached = newLevel == skill.customGoalLevel && customGoalConfig.enableInChat
 
         val rewards = buildList {
@@ -255,11 +258,11 @@ object SkillProgress {
     }
 
     private fun drawAllDisplay() = buildMap {
-        val skillMap = SkillAPI.storage ?: return@buildMap
+        val skillMap = SkillAPI.oldStorage ?: return@buildMap
         val sortedMap = SkillType.entries.filter { it.displayName.isNotEmpty() }.sortedBy { it.displayName.take(2) }
 
         for (skill in sortedMap) {
-            val skillInfo = skillMap[skill] ?: SkillAPI.SkillInfo(level = -1, overflowLevel = -1)
+            val skillInfo = skillMap[skill] ?: OldSkillInfo(level = -1, overflowLevel = -1)
             val lockedLevels = skillInfo.overflowCurrentXp > skillInfo.overflowCurrentXpMax
             val useCustomGoalLevel =
                 skillInfo.customGoalLevel != 0 && skillInfo.customGoalLevel > skillInfo.overflowLevel && customGoalConfig.enableInAllDisplay
@@ -319,10 +322,10 @@ object SkillProgress {
 
     private fun drawETADisplay() = buildList {
         val activeSkill = activeSkill ?: return@buildList
-        val skillInfo = SkillAPI.storage?.get(activeSkill) ?: return@buildList
+        val skillInfo = SkillAPI.oldStorage?.get(activeSkill) ?: return@buildList
         val xpInfo = skillXPInfoMap[activeSkill] ?: return@buildList
-        val skillInfoLast = oldSkillInfoMap[activeSkill] ?: return@buildList
-        oldSkillInfoMap[activeSkill] = skillInfo
+        val skillInfoLast = oldOldSkillInfoMap[activeSkill] ?: return@buildList
+        oldOldSkillInfoMap[activeSkill] = skillInfo
         val level = if (config.overflowConfig.enableInEtaDisplay.get() || config.customGoalConfig.enableInETADisplay) {
             skillInfo.overflowLevel
         } else {
@@ -400,7 +403,7 @@ object SkillProgress {
 
     private fun drawDisplay() = buildList {
         val activeSkill = activeSkill ?: return@buildList
-        val skillMap = SkillAPI.storage ?: return@buildList
+        val skillMap = SkillAPI.oldStorage ?: return@buildList
         val skill = skillMap[activeSkill] ?: return@buildList
         val useCustomGoalLevel = skill.customGoalLevel != 0 && skill.customGoalLevel > skill.overflowLevel
         val targetLevel = skill.customGoalLevel
@@ -481,9 +484,9 @@ object SkillProgress {
 
     private fun updateSkillInfo() {
         val activeSkill = activeSkill ?: return
-        val xpInfo = skillXPInfoMap.getOrPut(activeSkill) { SkillAPI.SkillXPInfo() }
-        val skillInfo = SkillAPI.storage?.get(activeSkill) ?: return
-        oldSkillInfoMap[activeSkill] = skillInfo
+        val xpInfo = skillXPInfoMap.getOrPut(activeSkill) { SkillXPInfo() }
+        val skillInfo = SkillAPI.oldStorage?.get(activeSkill) ?: return
+        oldOldSkillInfoMap[activeSkill] = skillInfo
 
         val totalXp = skillInfo.currentXp
 
@@ -515,7 +518,7 @@ object SkillProgress {
         xpInfo.lastTotalXp = totalXp.toFloat()
     }
 
-    private fun calculateXPHour(xpInfo: SkillAPI.SkillXPInfo) {
+    private fun calculateXPHour(xpInfo: SkillXPInfo) {
         while (xpInfo.xpGainQueue.size > 30) {
             xpInfo.xpGainQueue.removeLast()
         }

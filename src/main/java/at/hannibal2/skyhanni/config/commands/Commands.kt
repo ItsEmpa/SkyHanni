@@ -1,7 +1,7 @@
 package at.hannibal2.skyhanni.config.commands
 
 import at.hannibal2.skyhanni.SkyHanniMod
-import at.hannibal2.skyhanni.api.SkillAPI
+import at.hannibal2.skyhanni.api.skill.SkillAPI
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigFileType
 import at.hannibal2.skyhanni.config.ConfigGuiManager

@@ -7,7 +7,9 @@ import at.hannibal2.skyhanni.utils.renderables.RenderableUtils
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import net.minecraft.item.ItemStack
+import sun.misc.SharedSecrets
 import java.util.Collections
+import java.util.EnumMap
 import java.util.Queue
 import java.util.WeakHashMap
 import kotlin.math.ceil
@@ -96,6 +98,22 @@ object CollectionUtils {
             map.addOrPut(key, 1)
         }
         return map
+    }
+
+    inline fun <reified K : Enum<K>, V> enumMapOf(): EnumMap<K, V> {
+        return EnumMap<K, V>(K::class.java)
+    }
+
+    inline fun <reified K : Enum<K>, V> enumMapOf(initialize: (K) -> V): EnumMap<K, V> {
+        return enumMapOf<K, V>().apply { enumValues<K>().forEach { this[it] = initialize(it) } }
+    }
+
+    inline fun <reified K : Enum<K>, V> enumMapOf(initialize: () -> V): EnumMap<K, V> {
+        return enumMapOf<K, V>().apply { enumValues<K>().forEach { this[it] = initialize() } }
+    }
+
+    inline fun <reified K : Enum<K>, V> enumMapOf(vararg pairs: Pair<K, V>): EnumMap<K, V> {
+        return enumMapOf<K, V>().apply { putAll(pairs) }
     }
 
     fun List<String>.nextAfter(after: String, skip: Int = 1) = nextAfter({ it == after }, skip)

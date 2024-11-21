@@ -235,18 +235,20 @@ object NumberUtil {
     fun String.formatIntOrNull(): Int? = formatDoubleOrNull()?.toInt()
 
     fun String.formatDoubleOrNull(): Double? {
-        var text = lowercase().replace(",", "")
+        var text = this.replace(",", "")
 
-        val multiplier = if (text.endsWith("k")) {
-            text = text.substring(0, text.length - 1)
-            1_000.0
-        } else if (text.endsWith("m")) {
-            text = text.substring(0, text.length - 1)
-            1.million
-        } else if (text.endsWith("b")) {
-            text = text.substring(0, text.length - 1)
-            1.billion
-        } else 1.0
+        val last = text.lastOrNull()
+        var remove = true
+        val multiplier = when (last) {
+            'k' -> 1_000.0
+            'm' -> 1.million
+            'b' -> 1.billion
+            else -> {
+                remove = false
+                1.0
+            }
+        }
+        text = if (remove) text.dropLast(1) else text
         return text.toDoubleOrNull()?.let {
             it * multiplier
         }
