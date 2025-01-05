@@ -1,6 +1,7 @@
 package at.hannibal2.skyhanni.features.inventory.auctionhouse
 
 import at.hannibal2.skyhanni.SkyHanniMod
+import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.events.GuiKeyPressEvent
 import at.hannibal2.skyhanni.events.InventoryUpdatedEvent
@@ -27,10 +28,22 @@ object AuctionHouseCopyUnderbidPrice {
     private val config get() = SkyHanniMod.feature.inventory.auctions
 
     private val patternGroup = RepoPattern.group("auctions.underbid")
+
+    /**
+     * REGEX-TEST: §7Buy it now: §61,000,000,000 coins
+     * REGEX-TEST: §7Starting bid: §6200,000,000 coins
+     * REGEX-TEST: §7Top bid: §6220,000 coins
+     */
     private val auctionPricePattern by patternGroup.pattern(
         "price",
         "§7(?:Buy it now|Starting bid|Top bid): §6(?<coins>[0-9,]+) coins",
     )
+
+    /**
+     * REGEX-TEST: Auctions Browser
+     * REGEX-TEST: Manage Auctions
+     * REGEX-TEST: Auctions: "aaa"
+     */
     private val allowedInventoriesPattern by patternGroup.pattern(
         "allowedinventories",
         "Auctions Browser|Manage Auctions|Auctions: \".*\"?",
@@ -57,7 +70,7 @@ object AuctionHouseCopyUnderbidPrice {
         ChatUtils.chat("Copied ${newPrice.addSeparators()} to clipboard. (Copy Underbid Price)")
     }
 
-    @SubscribeEvent
+    @HandleEvent
     fun onKeybind(event: GuiKeyPressEvent) {
         if (!config.copyUnderbidKeybind.isKeyHeld()) return
         if (!LorenzUtils.inSkyBlock) return
@@ -71,7 +84,7 @@ object AuctionHouseCopyUnderbidPrice {
         }
     }
 
-    @SubscribeEvent
+    @HandleEvent
     fun onConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {
         event.move(25, "inventory.copyUnderbidPrice", "inventory.auctions.autoCopyUnderbidPrice")
     }

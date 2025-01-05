@@ -1,6 +1,7 @@
 package at.hannibal2.skyhanni.data
 
 import at.hannibal2.skyhanni.SkyHanniMod
+import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.data.BitsAPI.bits
 import at.hannibal2.skyhanni.data.BitsAPI.bitsAvailable
@@ -43,11 +44,11 @@ object BitsAPI {
         private set(value) {
             profileStorage?.bits = value
         }
-    var currentFameRank: FameRank?
-        get() = playerStorage?.currentFameRank?.let { getFameRankByNameOrNull(it) }
+    private var currentFameRank: FameRank?
+        get() = getFameRankByNameOrNull(playerStorage.currentFameRank)
         private set(value) {
             if (value != null) {
-                playerStorage?.currentFameRank = value.name
+                playerStorage.currentFameRank = value.name
             }
         }
     var bitsAvailable: Int
@@ -193,7 +194,7 @@ object BitsAPI {
         "^§aCommunity Shop|§eFame Rank$",
     )
 
-    @SubscribeEvent
+    @HandleEvent
     fun onScoreboardChange(event: ScoreboardUpdateEvent) {
         if (!isEnabled()) return
         for (line in event.added) {
@@ -389,14 +390,14 @@ object BitsAPI {
     fun hasCookieBuff() = cookieBuffTime?.isInFuture() ?: false
 
     private fun sendBitsGainEvent(difference: Int) =
-        BitsUpdateEvent.BitsGain(bits, bitsAvailable, difference).postAndCatch()
+        BitsUpdateEvent.BitsGain(bits, bitsAvailable, difference).post()
 
-    private fun sendBitsSpentEvent() = BitsUpdateEvent.BitsSpent(bits, bitsAvailable).postAndCatch()
-    private fun sendBitsAvailableGainedEvent() = BitsUpdateEvent.BitsAvailableGained(bits, bitsAvailable).postAndCatch()
+    private fun sendBitsSpentEvent() = BitsUpdateEvent.BitsSpent(bits, bitsAvailable).post()
+    private fun sendBitsAvailableGainedEvent() = BitsUpdateEvent.BitsAvailableGained(bits, bitsAvailable).post()
 
     fun isEnabled() = LorenzUtils.inSkyBlock && !LorenzUtils.isOnAlphaServer && profileStorage != null
 
-    @SubscribeEvent
+    @HandleEvent
     fun onConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {
         event.move(35, "#profile.bits.bitsToClaim", "#profile.bits.bitsAvailable")
     }

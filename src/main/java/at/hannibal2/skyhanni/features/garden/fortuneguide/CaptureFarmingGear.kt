@@ -1,5 +1,6 @@
 package at.hannibal2.skyhanni.features.garden.fortuneguide
 
+import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.config.storage.ProfileSpecificStorage
 import at.hannibal2.skyhanni.data.PetAPI
@@ -39,6 +40,10 @@ object CaptureFarmingGear {
     private val outdatedItems get() = GardenAPI.storage?.fortune?.outdatedItems
 
     private val patternGroup = RepoPattern.group("garden.fortuneguide.capture")
+
+    /**
+     * REGEX-TEST: SKILL LEVEL UP Farming 1 ➜ 2
+     */
     private val farmingLevelUpPattern by patternGroup.pattern(
         "farminglevel",
         "SKILL LEVEL UP Farming .*➜(?<level>.*)",
@@ -47,6 +52,10 @@ object CaptureFarmingGear {
         "fortuneupgrade",
         "You claimed the Garden Farming Fortune (?<level>.*) upgrade!",
     )
+
+    /**
+     * REGEX-TEST: §6+48☘ Farming Fortune
+     */
     private val bestiaryPattern by patternGroup.pattern(
         "bestiary",
         ".*§6+(?<fortune>.*)☘ Farming Fortune.*",
@@ -67,6 +76,10 @@ object CaptureFarmingGear {
         "lotusupgrade",
         "Lotus (?<piece>.*) upgraded to [+].*☘!",
     )
+
+    /**
+     * REGEX-TEST: Your Bingo leveled up to level 2!
+     */
     private val petLevelUpPattern by patternGroup.pattern(
         "petlevelup",
         "Your (?<pet>.*) leveled up to level .*!",
@@ -163,7 +176,7 @@ object CaptureFarmingGear {
         }
     }
 
-    @SubscribeEvent
+    @HandleEvent
     fun onGardenToolChange(event: GardenToolChangeEvent) {
         captureFarmingGear()
     }
@@ -299,6 +312,7 @@ object CaptureFarmingGear {
         var highestRabbitRarity = (FarmingItems.RABBIT.getItemOrNull()?.getItemRarityOrNull()?.id ?: -1) - 1
         var highestBeeRarity = (FarmingItems.BEE.getItemOrNull()?.getItemRarityOrNull()?.id ?: -1) - 1
         var highestSlugRarity = (FarmingItems.SLUG.getItemOrNull()?.getItemRarityOrNull()?.id ?: -1) - 1
+        var highestHedgehogRarity = (FarmingItems.HEDGEHOG.getItemOrNull()?.getItemRarityOrNull()?.id ?: -1) - 1
 
         for ((_, item) in items) {
             if (item.getItemCategoryOrNull() != ItemCategory.PET) continue
@@ -327,6 +341,11 @@ object CaptureFarmingGear {
                 FarmingItems.SLUG.setItem(item)
                 outdatedItems[FarmingItems.SLUG] = false
                 highestSlugRarity = rarity.toInt()
+            }
+            if (name == "HEDGEHOG" && rarity.toInt() > highestHedgehogRarity) {
+                FarmingItems.HEDGEHOG.setItem(item)
+                outdatedItems[FarmingItems.HEDGEHOG] = false
+                highestHedgehogRarity = rarity.toInt()
             }
         }
     }
@@ -415,8 +434,8 @@ object CaptureFarmingGear {
         storage.outdatedItems.clear()
     }
 
-    @SubscribeEvent
-    fun onConfigUpdaterMigratorConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {
+    @HandleEvent
+    fun onConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {
         event.move(48, "#profile.garden.fortune.carrotFortune", "#profile.garden.fortune.carrolyn.CARROT")
         event.move(48, "#profile.garden.fortune.pumpkinFortune", "#profile.garden.fortune.carrolyn.PUMPKIN")
         event.move(48, "#profile.garden.fortune.cocoaBeansFortune", "#profile.garden.fortune.carrolyn.COCOA_BEANS")
