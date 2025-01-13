@@ -20,7 +20,7 @@ object HypixelEventAPI {
     }
 
     private fun onHelloPacket(packet: ClientboundHelloPacket) {
-        if (!HypixelLocationAPI.config) return
+        if (!HypixelLocationAPI.config) return // Not sure if this config should be removed
         val isAlpha = packet.environment != Environment.PRODUCTION
         HypixelAPIJoinEvent(isAlpha).post()
     }

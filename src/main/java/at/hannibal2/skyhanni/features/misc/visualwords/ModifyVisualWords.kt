@@ -5,7 +5,7 @@ import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigFileType
 import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
 import at.hannibal2.skyhanni.config.enums.OutsideSbFeature
-import at.hannibal2.skyhanni.events.HypixelJoinEvent
+import at.hannibal2.skyhanni.events.hypixel.modapi.HypixelAPIJoinEvent
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.LorenzUtils
@@ -87,7 +87,7 @@ object ModifyVisualWords {
 
     @HandleEvent
     @Suppress("DEPRECATION")
-    fun onHypixelJoin(event: HypixelJoinEvent) {
+    fun onHypixelJoin(event: HypixelAPIJoinEvent) {
         val oldModifiedWords = SkyHanniMod.feature.storage.modifiedWords
         if (oldModifiedWords.isNotEmpty()) {
             SkyHanniMod.visualWordsData.modifiedWords = oldModifiedWords

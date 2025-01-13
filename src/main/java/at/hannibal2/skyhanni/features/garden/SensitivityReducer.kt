@@ -6,8 +6,8 @@ import at.hannibal2.skyhanni.config.features.garden.SensitivityReducerConfig
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
 import at.hannibal2.skyhanni.events.DebugDataCollectEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
-import at.hannibal2.skyhanni.events.HypixelJoinEvent
 import at.hannibal2.skyhanni.events.LorenzTickEvent
+import at.hannibal2.skyhanni.events.hypixel.modapi.HypixelAPIJoinEvent
 import at.hannibal2.skyhanni.features.misc.LockMouseLook
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils
@@ -171,7 +171,7 @@ object SensitivityReducer {
     }
 
     @HandleEvent
-    fun onHypixelJoin(event: HypixelJoinEvent) {
+    fun onHypixelJoin(event: HypixelAPIJoinEvent) {
         val divisor = config.reducingFactor.get()
         val expectedLoweredSensitivity = doTheMath(gameSettings.mouseSensitivity, true)
         if (abs(storage.savedMouseloweredSensitivity - expectedLoweredSensitivity) <= 0.0001) {

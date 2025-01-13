@@ -6,8 +6,8 @@ import at.hannibal2.skyhanni.config.ConfigManager
 import at.hannibal2.skyhanni.config.commands.CommandCategory
 import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
 import at.hannibal2.skyhanni.data.jsonobjects.repo.neu.NeuPetsJson
-import at.hannibal2.skyhanni.events.HypixelJoinEvent
 import at.hannibal2.skyhanni.events.NeuRepositoryReloadEvent
+import at.hannibal2.skyhanni.events.hypixel.modapi.HypixelAPIJoinEvent
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.ChatUtils
@@ -370,7 +370,7 @@ object EnoughUpdatesManager {
     }
 
     @HandleEvent
-    fun onHypixelJoin(event: HypixelJoinEvent) {
+    fun onHypixelJoin(event: HypixelAPIJoinEvent) {
         if (itemMap.isEmpty() && itemCountInRepoFolder() > 0) {
             reloadRepo()
             println("No loaded items in NEU repo, attempting to reload the repo.")
