@@ -4,6 +4,7 @@ import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.events.LorenzToolTipEvent
+import at.hannibal2.skyhanni.neu.NEUCompat
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.ItemUtils.getItemRarityOrNull
@@ -15,11 +16,8 @@ import at.hannibal2.skyhanni.utils.LorenzUtils
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.roundTo
 import at.hannibal2.skyhanni.utils.NumberUtil.shortFormat
-import at.hannibal2.skyhanni.utils.ReflectionUtils.makeAccessible
 import at.hannibal2.skyhanni.utils.SkyBlockItemModifierUtils.getPetExp
 import at.hannibal2.skyhanni.utils.StringUtils
-import at.hannibal2.skyhanni.utils.system.PlatformUtils
-import io.github.moulberry.notenoughupdates.NotEnoughUpdates
 import net.minecraftforge.fml.common.eventhandler.EventPriority
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
@@ -56,7 +54,7 @@ object PetExpTooltip {
                 val addLegendaryColor = if (isBelowLegendary) "§6" else ""
                 event.toolTip.add(
                     index,
-                    "$progressBar §e${petExperience.addSeparators()}§6/§e${maxXp.shortFormat()}"
+                    "$progressBar §e${petExperience.addSeparators()}§6/§e${maxXp.shortFormat()}",
                 )
                 event.toolTip.add(index, "§7Progress to ${addLegendaryColor}Level $maxLevel: §e$percentageFormat")
             }
@@ -82,22 +80,11 @@ object PetExpTooltip {
         index = toolTip.indexOfFirst { it.contains("Progress to Level") }
         if (index != -1) {
 
-            val offset = if (PlatformUtils.isNeuLoaded() && isNeuExtendedExpEnabled) 4 else 3
+            val offset = if (NEUCompat.isNeuExtendedExpEnabled()) 4 else 3
             return index + offset
         }
 
         return null
-    }
-
-    private val isNeuExtendedExpEnabled get() = fieldPetExtendExp.get(objectNeuTooltipTweaks) as Boolean
-
-    private val objectNeuTooltipTweaks by lazy {
-        val field = NotEnoughUpdates.INSTANCE.config.javaClass.getDeclaredField("tooltipTweaks")
-        field.makeAccessible().get(NotEnoughUpdates.INSTANCE.config)
-    }
-
-    private val fieldPetExtendExp by lazy {
-        objectNeuTooltipTweaks.javaClass.getDeclaredField("petExtendExp").makeAccessible()
     }
 
     private fun getMaxValues(petName: String, petExperience: Double): Pair<Int, Int> {
@@ -123,7 +110,7 @@ object PetExpTooltip {
         event.move(
             3,
             "misc.petExperienceToolTip.showGoldenDragonEgg",
-            "misc.pets.petExperienceToolTip.showGoldenDragonEgg"
+            "misc.pets.petExperienceToolTip.showGoldenDragonEgg",
         )
     }
 }

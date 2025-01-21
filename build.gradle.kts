@@ -142,7 +142,11 @@ dependencies {
         mappings(target.mappingDependency)
     }
     if (target.forgeDep != null) {
-        "forge"(target.forgeDep!!)
+        forge(target.forgeDep!!)
+    }
+
+    shadowImpl(project(":compat")) {
+        isTransitive = false
     }
 
     // Discord RPC client
@@ -183,10 +187,10 @@ dependencies {
     if (target.isForge) modRuntimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.2.1")
     else modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.1")
 
-    modCompileOnly("com.github.hannibal002:notenoughupdates:4957f0b:all") {
+    /*modCompileOnly("com.github.hannibal002:notenoughupdates:4957f0b:all") {
         exclude(module = "unspecified")
         isTransitive = false
-    }
+    }*/
     // December 29, 2024, 07:30 PM EST
     // https://github.com/NotEnoughUpdates/NotEnoughUpdates/tree/2.5.0
     devenvMod("com.github.NotEnoughUpdates:NotEnoughUpdates:2.5.0:all") {

@@ -16,6 +16,8 @@ import at.hannibal2.skyhanni.data.repo.RepoManager
 import at.hannibal2.skyhanni.events.LorenzTickEvent
 import at.hannibal2.skyhanni.events.utils.PreInitFinishedEvent
 import at.hannibal2.skyhanni.features.nether.reputationhelper.CrimsonIsleReputationHelper
+import at.hannibal2.skyhanni.neu.NEUCompat
+import at.hannibal2.skyhanni.neu.NEUEvents
 import at.hannibal2.skyhanni.skyhannimodule.LoadedModules
 import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.test.hotswap.HotswapSupport
@@ -54,6 +56,7 @@ class SkyHanniMod {
         HotswapSupport.load()
 
         loadModule(this)
+        if (NEUCompat.isNeuLoaded) loadModule(NEUEvents)
         LoadedModules.modules.forEach { loadModule(it) }
 
         loadModule(CrimsonIsleReputationHelper(this))

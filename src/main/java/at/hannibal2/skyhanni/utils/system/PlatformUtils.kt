@@ -2,6 +2,7 @@ package at.hannibal2.skyhanni.utils.system
 
 import at.hannibal2.skyhanni.data.NotificationManager
 import at.hannibal2.skyhanni.data.SkyHanniNotification
+import at.hannibal2.skyhanni.neu.NEUCompat
 import at.hannibal2.skyhanni.utils.DelayedRun
 import net.minecraft.launchwrapper.Launch
 import net.minecraftforge.fml.common.Loader
@@ -30,9 +31,7 @@ object PlatformUtils {
 
     fun Class<*>.getModInstance(): ModInstance? = getModFromPackage(canonicalName?.substringBeforeLast('.'))
 
-    private var validNeuInstalled = false
-
-    fun isNeuLoaded() = validNeuInstalled
+    fun isNeuLoaded() = NEUCompat.isNeuLoaded
 
     @JvmStatic
     fun checkIfNeuIsLoaded() {
@@ -47,7 +46,7 @@ object PlatformUtils {
 
             for (field in clazz.methods) {
                 if (field.name == "findInternalNameByDisplayName") {
-                    validNeuInstalled = true
+                    NEUCompat.setNeuLoaded()
                     return
                 }
             }

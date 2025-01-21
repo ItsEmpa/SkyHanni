@@ -6,10 +6,9 @@ import at.hannibal2.skyhanni.events.GuiContainerEvent
 import at.hannibal2.skyhanni.events.GuiContainerEvent.ClickType
 import at.hannibal2.skyhanni.events.GuiContainerEvent.CloseWindowEvent
 import at.hannibal2.skyhanni.events.GuiContainerEvent.SlotClickEvent
+import at.hannibal2.skyhanni.neu.NEUCompat
 import at.hannibal2.skyhanni.test.SkyHanniDebugsAndTests
 import at.hannibal2.skyhanni.utils.DelayedRun
-import at.hannibal2.skyhanni.utils.system.PlatformUtils
-import io.github.moulberry.notenoughupdates.NEUApi
 import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.inventory.Slot
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
@@ -39,7 +38,7 @@ class GuiContainerHook(guiAny: Any) {
     ) {
         if (!SkyHanniDebugsAndTests.globalRender) return
         if (GuiContainerEvent.PreDraw(gui, gui.inventorySlots, mouseX, mouseY, partialTicks).post()) {
-            if (PlatformUtils.isNeuLoaded()) NEUApi.setInventoryButtonsToDisabled()
+            NEUCompat.disableInventoryButtons()
             GuiData.preDrawEventCancelled = true
             ci.cancel()
         } else {

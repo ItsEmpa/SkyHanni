@@ -5,6 +5,7 @@ import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.events.SecondPassedEvent
 import at.hannibal2.skyhanni.features.inventory.bazaar.BazaarApi.getBazaarData
 import at.hannibal2.skyhanni.features.inventory.bazaar.HypixelItemAPI
+import at.hannibal2.skyhanni.neu.NEUCompat
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ItemUtils.getInternalName
 import at.hannibal2.skyhanni.utils.ItemUtils.getRecipePrice
@@ -15,7 +16,6 @@ import at.hannibal2.skyhanni.utils.NEUItems.getRecipes
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.system.PlatformUtils
 import com.google.gson.JsonObject
-import io.github.moulberry.notenoughupdates.NotEnoughUpdates
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.minutes
 
@@ -66,17 +66,14 @@ object ItemPriceUtils {
     fun NEUInternalName.isAuctionHouseItem(): Boolean = getLowestBinOrNull() != null
 
     private fun NEUInternalName.getLowestBinOrNull(): Double? {
-        val result = if (PlatformUtils.isNeuLoaded()) {
-            getNeuLowestBin(this)
+        val result = if (NEUCompat.isNeuLoaded) {
+            NEUCompat.getLowestBin(this.asString())
         } else {
             getShLowestBin(this)
         }
         if (result == -1L) return null
         return result.toDouble()
     }
-
-    private fun getNeuLowestBin(internalName: NEUInternalName) =
-        NotEnoughUpdates.INSTANCE.manager.auctionManager.getLowestBin(internalName.asString())
 
     // We can not use NEU craft cost, since we want to respect the price source choice
     // NEUItems.manager.auctionManager.getCraftCost(asString())?.craftCost

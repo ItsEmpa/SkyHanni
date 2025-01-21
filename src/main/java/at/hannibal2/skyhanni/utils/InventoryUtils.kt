@@ -1,10 +1,8 @@
 package at.hannibal2.skyhanni.utils
 
-import at.hannibal2.skyhanni.test.command.ErrorManager
+import at.hannibal2.skyhanni.neu.NEUCompat
 import at.hannibal2.skyhanni.utils.EntityUtils.getArmorInventory
 import at.hannibal2.skyhanni.utils.ItemUtils.getInternalNameOrNull
-import at.hannibal2.skyhanni.utils.system.PlatformUtils
-import io.github.moulberry.notenoughupdates.NotEnoughUpdates
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.client.gui.inventory.GuiContainer
@@ -15,7 +13,6 @@ import net.minecraft.inventory.ContainerChest
 import net.minecraft.inventory.IInventory
 import net.minecraft.inventory.Slot
 import net.minecraft.item.ItemStack
-import kotlin.time.Duration.Companion.seconds
 //#if MC > 1.12
 //$$ import net.minecraft.inventory.ClickType
 //#endif
@@ -83,23 +80,7 @@ object InventoryUtils {
     fun getLeggings(): ItemStack? = getArmor()[1]
     fun getBoots(): ItemStack? = getArmor()[0]
 
-    val isNeuStorageEnabled by RecalculatingValue(10.seconds) {
-        if (!PlatformUtils.isNeuLoaded()) {
-            return@RecalculatingValue false
-        }
-        try {
-            val config = NotEnoughUpdates.INSTANCE.config
-
-            val storageField = config.javaClass.getDeclaredField("storageGUI")
-            val storage = storageField[config]
-
-            val booleanField = storage.javaClass.getDeclaredField("enableStorageGUI3")
-            booleanField[storage] as Boolean
-        } catch (e: Throwable) {
-            ErrorManager.logErrorWithData(e, "Could not read NEU config to determine if the neu storage is enabled.")
-            false
-        }
-    }
+    val isNeuStorageEnabled get() = NEUCompat.isCustomStorageEnabled()
 
     fun isSlotInPlayerInventory(itemStack: ItemStack): Boolean {
         val screen = Minecraft.getMinecraft().currentScreen as? GuiContainer ?: return false

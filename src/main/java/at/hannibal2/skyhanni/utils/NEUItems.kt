@@ -7,6 +7,7 @@ import at.hannibal2.skyhanni.config.ConfigManager
 import at.hannibal2.skyhanni.data.jsonobjects.repo.MultiFilterJson
 import at.hannibal2.skyhanni.events.NeuRepositoryReloadEvent
 import at.hannibal2.skyhanni.events.RepositoryReloadEvent
+import at.hannibal2.skyhanni.neu.NEUCompat
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.CollectionUtils.addOrPut
@@ -21,9 +22,6 @@ import at.hannibal2.skyhanni.utils.PrimitiveItemStack.Companion.makePrimitiveSta
 import at.hannibal2.skyhanni.utils.system.PlatformUtils
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
-import io.github.moulberry.notenoughupdates.NEUOverlay
-import io.github.moulberry.notenoughupdates.overlays.AuctionSearchOverlay
-import io.github.moulberry.notenoughupdates.overlays.BazaarSearchOverlay
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GLAllocation
 import net.minecraft.client.renderer.GlStateManager
@@ -304,17 +302,7 @@ object NEUItems {
 
     fun getRecipes(internalName: NEUInternalName): Set<PrimitiveRecipe> = EnoughUpdatesManager.getRecipesFor(internalName)
 
-    fun neuHasFocus(): Boolean {
-        if (!PlatformUtils.isNeuLoaded()) return false
-        if (AuctionSearchOverlay.shouldReplace()) return true
-        if (BazaarSearchOverlay.shouldReplace()) return true
-        // TODO add RecipeSearchOverlay via RecalculatingValue and reflection
-        // https://github.com/NotEnoughUpdates/NotEnoughUpdates/blob/master/src/main/java/io/github/moulberry/notenoughupdates/overlays/RecipeSearchOverlay.java
-        if (InventoryUtils.inStorage() && InventoryUtils.isNeuStorageEnabled) return true
-        if (NEUOverlay.searchBarHasFocus) return true
-
-        return false
-    }
+    fun neuHasFocus(): Boolean = NEUCompat.neuHasFocus(InventoryUtils::inStorage)
 
     // Uses NEU
     fun saveNBTData(item: ItemStack, removeLore: Boolean = true): String {

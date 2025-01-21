@@ -3,18 +3,17 @@ package at.hannibal2.skyhanni.api.enoughupdates
 import at.hannibal2.skyhanni.data.jsonobjects.other.HypixelApiTrophyFish
 import at.hannibal2.skyhanni.data.jsonobjects.other.HypixelPlayerApiJson
 import at.hannibal2.skyhanni.events.NeuProfileDataLoadedEvent
+import at.hannibal2.skyhanni.neu.NEUEvents
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.NumberUtil.isInt
 import at.hannibal2.skyhanni.utils.json.BaseGsonBuilder
 import at.hannibal2.skyhanni.utils.json.fromJson
+import com.google.gson.JsonObject
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
-import io.github.moulberry.notenoughupdates.events.ProfileDataLoadedEvent
-import io.github.moulberry.notenoughupdates.events.RepositoryReloadEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
 @SkyHanniModule(neuRequired = true)
 object NeuEventWrappers {
@@ -54,10 +53,13 @@ object NeuEventWrappers {
             .create()
     }
 
+    init {
+        NEUEvents.profileDataListener = ::onProfileDataLoaded
+        NEUEvents.repositoryReloadListener = EnoughUpdatesManager::reloadRepo
+    }
 
-    @SubscribeEvent
-    fun onProfileDataLoaded(event: ProfileDataLoadedEvent) {
-        val apiData = event.data ?: return
+    private fun onProfileDataLoaded(apiData: JsonObject?) {
+        if (apiData == null) return
         try {
             val playerData = hypixelApiGson.fromJson<HypixelPlayerApiJson>(apiData)
             NeuProfileDataLoadedEvent(playerData).post()
@@ -68,10 +70,5 @@ object NeuEventWrappers {
                 "data" to apiData,
             )
         }
-    }
-
-    @SubscribeEvent
-    fun onNeuRepoReload(event: RepositoryReloadEvent) {
-        EnoughUpdatesManager.reloadRepo()
     }
 }

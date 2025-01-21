@@ -16,6 +16,7 @@ import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.features.garden.GardenAPI.getCropType
 import at.hannibal2.skyhanni.features.misc.compacttablist.AdvancedPlayerList
 import at.hannibal2.skyhanni.features.rift.RiftAPI
+import at.hannibal2.skyhanni.neu.NEUCompat
 import at.hannibal2.skyhanni.utils.InventoryUtils
 import at.hannibal2.skyhanni.utils.ItemUtils.extraAttributes
 import at.hannibal2.skyhanni.utils.LorenzUtils
@@ -28,8 +29,6 @@ import at.hannibal2.skyhanni.utils.StringUtils.removeColor
 import at.hannibal2.skyhanni.utils.TabListData
 import at.hannibal2.skyhanni.utils.TimeUtils.format
 import at.hannibal2.skyhanni.utils.TimeUtils.formatted
-import at.hannibal2.skyhanni.utils.system.PlatformUtils
-import io.github.moulberry.notenoughupdates.miscfeatures.PetInfoOverlay.getCurrentPet
 import java.util.regex.Pattern
 import kotlin.time.Duration.Companion.minutes
 
@@ -76,7 +75,7 @@ private fun getCropMilestoneDisplay(): String {
 fun getPetDisplay(): String = PetAPI.currentPet?.let {
     val colorCode = it.substring(1..2).first()
     val petName = it.substring(2).removeColor()
-    val petLevel = if (PlatformUtils.isNeuLoaded()) getCurrentPet()?.petLevel?.currentLevel ?: "?" else "?"
+    val petLevel = NEUCompat.getCurrentPetLevel()
 
     "[Lvl $petLevel] ${colorCodeToRarity(colorCode)} $petName"
 } ?: "No pet equipped"

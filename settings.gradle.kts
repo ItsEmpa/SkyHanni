@@ -39,6 +39,7 @@ MultiVersionStage.initFrom(file(".gradle/private.properties"))
 
 include("annotation-processors")
 include("detekt")
+include("compat")
 rootProject.name = "SkyHanni"
 rootProject.buildFileName = "root.gradle.kts"
 
