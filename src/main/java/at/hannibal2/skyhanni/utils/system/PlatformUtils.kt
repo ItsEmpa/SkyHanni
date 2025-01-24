@@ -1,8 +1,8 @@
 package at.hannibal2.skyhanni.utils.system
 
+import at.hannibal2.skyhanni.compat.NEUCompat
 import at.hannibal2.skyhanni.data.NotificationManager
 import at.hannibal2.skyhanni.data.SkyHanniNotification
-import at.hannibal2.skyhanni.neu.NEUCompat
 import at.hannibal2.skyhanni.utils.DelayedRun
 import net.minecraft.launchwrapper.Launch
 import net.minecraftforge.fml.common.Loader
@@ -35,6 +35,7 @@ object PlatformUtils {
 
     @JvmStatic
     fun checkIfNeuIsLoaded() {
+        // TODO: find better way to do this
         try {
             Class.forName("io.github.moulberry.notenoughupdates.NotEnoughUpdates")
         } catch (e: Throwable) {

@@ -2,6 +2,7 @@ package at.hannibal2.skyhanni.features.misc.discordrpc
 
 // SkyblockAddons code, adapted for SkyHanni with some additions and fixes
 
+import at.hannibal2.skyhanni.compat.NEUCompat
 import at.hannibal2.skyhanni.data.ActionBarStatsData
 import at.hannibal2.skyhanni.data.GardenCropMilestones.getCounter
 import at.hannibal2.skyhanni.data.GardenCropMilestones.getTierForCropCount
@@ -16,7 +17,6 @@ import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.features.garden.GardenAPI.getCropType
 import at.hannibal2.skyhanni.features.misc.compacttablist.AdvancedPlayerList
 import at.hannibal2.skyhanni.features.rift.RiftAPI
-import at.hannibal2.skyhanni.neu.NEUCompat
 import at.hannibal2.skyhanni.utils.InventoryUtils
 import at.hannibal2.skyhanni.utils.ItemUtils.extraAttributes
 import at.hannibal2.skyhanni.utils.LorenzUtils
@@ -75,7 +75,7 @@ private fun getCropMilestoneDisplay(): String {
 fun getPetDisplay(): String = PetAPI.currentPet?.let {
     val colorCode = it.substring(1..2).first()
     val petName = it.substring(2).removeColor()
-    val petLevel = NEUCompat.getCurrentPetLevel()
+    val petLevel = NEUCompat.getCurrentPetLevel()?.toString() ?: "?"
 
     "[Lvl $petLevel] ${colorCodeToRarity(colorCode)} $petName"
 } ?: "No pet equipped"

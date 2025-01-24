@@ -1,6 +1,6 @@
 package at.hannibal2.skyhanni.utils
 
-import at.hannibal2.skyhanni.neu.NEUCompat
+import at.hannibal2.skyhanni.compat.NEUScreens
 import at.hannibal2.skyhanni.utils.EntityUtils.getArmorInventory
 import at.hannibal2.skyhanni.utils.ItemUtils.getInternalNameOrNull
 import net.minecraft.client.Minecraft
@@ -80,7 +80,7 @@ object InventoryUtils {
     fun getLeggings(): ItemStack? = getArmor()[1]
     fun getBoots(): ItemStack? = getArmor()[0]
 
-    val isNeuStorageEnabled get() = NEUCompat.isCustomStorageEnabled()
+    val isNeuStorageEnabled get() = NEUScreens.isCustomStorageEnabled()
 
     fun isSlotInPlayerInventory(itemStack: ItemStack): Boolean {
         val screen = Minecraft.getMinecraft().currentScreen as? GuiContainer ?: return false

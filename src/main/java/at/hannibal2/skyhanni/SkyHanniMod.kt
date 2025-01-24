@@ -2,6 +2,8 @@ package at.hannibal2.skyhanni
 
 import at.hannibal2.skyhanni.api.enoughupdates.EnoughUpdatesManager
 import at.hannibal2.skyhanni.api.event.SkyHanniEvents
+import at.hannibal2.skyhanni.compat.NEUCompat
+import at.hannibal2.skyhanni.compat.NEUEvents
 import at.hannibal2.skyhanni.config.ConfigFileType
 import at.hannibal2.skyhanni.config.ConfigManager
 import at.hannibal2.skyhanni.config.Features
@@ -16,8 +18,6 @@ import at.hannibal2.skyhanni.data.repo.RepoManager
 import at.hannibal2.skyhanni.events.LorenzTickEvent
 import at.hannibal2.skyhanni.events.utils.PreInitFinishedEvent
 import at.hannibal2.skyhanni.features.nether.reputationhelper.CrimsonIsleReputationHelper
-import at.hannibal2.skyhanni.neu.NEUCompat
-import at.hannibal2.skyhanni.neu.NEUEvents
 import at.hannibal2.skyhanni.skyhannimodule.LoadedModules
 import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.test.hotswap.HotswapSupport
@@ -56,6 +56,7 @@ class SkyHanniMod {
         HotswapSupport.load()
 
         loadModule(this)
+        // haven't found a way to make the @SkyHanniModule annotation work for the compat sourceset
         if (NEUCompat.isNeuLoaded) loadModule(NEUEvents)
         LoadedModules.modules.forEach { loadModule(it) }
 

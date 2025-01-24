@@ -1,12 +1,12 @@
 package at.hannibal2.skyhanni.mixins.hooks
 
+import at.hannibal2.skyhanni.compat.NEUScreens
 import at.hannibal2.skyhanni.data.GuiData
 import at.hannibal2.skyhanni.events.DrawScreenAfterEvent
 import at.hannibal2.skyhanni.events.GuiContainerEvent
 import at.hannibal2.skyhanni.events.GuiContainerEvent.ClickType
 import at.hannibal2.skyhanni.events.GuiContainerEvent.CloseWindowEvent
 import at.hannibal2.skyhanni.events.GuiContainerEvent.SlotClickEvent
-import at.hannibal2.skyhanni.neu.NEUCompat
 import at.hannibal2.skyhanni.test.SkyHanniDebugsAndTests
 import at.hannibal2.skyhanni.utils.DelayedRun
 import net.minecraft.client.gui.inventory.GuiContainer
@@ -38,7 +38,7 @@ class GuiContainerHook(guiAny: Any) {
     ) {
         if (!SkyHanniDebugsAndTests.globalRender) return
         if (GuiContainerEvent.PreDraw(gui, gui.inventorySlots, mouseX, mouseY, partialTicks).post()) {
-            NEUCompat.disableInventoryButtons()
+            NEUScreens.disableInventoryButtons()
             GuiData.preDrawEventCancelled = true
             ci.cancel()
         } else {

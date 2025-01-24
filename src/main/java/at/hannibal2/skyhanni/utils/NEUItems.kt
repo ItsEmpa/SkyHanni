@@ -7,7 +7,7 @@ import at.hannibal2.skyhanni.config.ConfigManager
 import at.hannibal2.skyhanni.data.jsonobjects.repo.MultiFilterJson
 import at.hannibal2.skyhanni.events.NeuRepositoryReloadEvent
 import at.hannibal2.skyhanni.events.RepositoryReloadEvent
-import at.hannibal2.skyhanni.neu.NEUCompat
+import at.hannibal2.skyhanni.compat.NEUScreens
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.CollectionUtils.addOrPut
@@ -302,7 +302,7 @@ object NEUItems {
 
     fun getRecipes(internalName: NEUInternalName): Set<PrimitiveRecipe> = EnoughUpdatesManager.getRecipesFor(internalName)
 
-    fun neuHasFocus(): Boolean = NEUCompat.neuHasFocus(InventoryUtils::inStorage)
+    fun neuHasFocus(): Boolean = NEUScreens.neuHasFocus(InventoryUtils::inStorage)
 
     // Uses NEU
     fun saveNBTData(item: ItemStack, removeLore: Boolean = true): String {

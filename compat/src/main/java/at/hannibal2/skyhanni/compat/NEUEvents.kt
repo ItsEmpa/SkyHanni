@@ -1,4 +1,4 @@
-package at.hannibal2.skyhanni.neu
+package at.hannibal2.skyhanni.compat
 
 import com.google.gson.JsonObject
 import io.github.moulberry.notenoughupdates.events.ProfileDataLoadedEvent

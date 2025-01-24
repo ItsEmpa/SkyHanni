@@ -1,6 +1,4 @@
 package net.minecraft.client.gui;
 
-// dummy class !!! balls
-public class Gui {
-
-}
+@SuppressWarnings("unused")
+public class Gui {}
