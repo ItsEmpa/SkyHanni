@@ -31,7 +31,11 @@ import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.shortFormat
 import at.hannibal2.skyhanni.utils.RenderUtils.renderRenderables
 import at.hannibal2.skyhanni.utils.renderables.Renderable
+import at.hannibal2.skyhanni.utils.system.PlatformUtils
+import io.github.moulberry.notenoughupdates.NotEnoughUpdates
+import io.github.moulberry.notenoughupdates.profileviewer.GuiProfileViewer
 import net.minecraft.client.Minecraft
+import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.init.Items
 import net.minecraft.item.ItemStack
 import org.lwjgl.input.Keyboard
@@ -66,15 +70,38 @@ object EstimatedItemValue {
         itemValueCalculationData = data.valueCalculationData
     }
 
+    private fun isInNeuOverlay(): Boolean {
+        val inPv = Minecraft.getMinecraft().currentScreen is GuiProfileViewer
+        val inTrade = InventoryUtils.openInventoryName().startsWith("You  ")
+        val inNeuTrade = inTrade && NotEnoughUpdates.INSTANCE.config.tradeMenu.enableCustomTrade
+        val inStorage = InventoryUtils.inStorage() && InventoryUtils.isNeuStorageEnabled
+
+        return inPv || inNeuTrade || inStorage
+    }
+
+    fun onNeuDrawEquipment(stack: ItemStack) {
+        renderedItems++
+        updateItem(stack)
+    }
+
     @HandleEvent(onlyOnSkyblock = true)
     fun onTooltip(event: ItemHoverEvent) {
         if (!config.enabled) return
-        if (NEUScreens.isProfileViewer(Minecraft.getMinecraft().currentScreen)) return
+        if (!PlatformUtils.isNeuLoaded()) return
+        if (!isInNeuOverlay()) return
 
         if (renderedItems == 0) {
             updateItem(event.itemStack)
         }
+        val inStorage = InventoryUtils.inStorage() && InventoryUtils.isNeuStorageEnabled
+        // we use renderInNeuStorageOverlay() for this
+        if (inStorage) return
+
+        // render the estimated item value over NEU PV
+        GlStateManager.translate(0f, 0f, 200f)
         tryRendering()
+        GlStateManager.translate(0f, 0f, -200f)
+
         renderedItems++
     }
 
@@ -115,7 +142,7 @@ object EstimatedItemValue {
             ErrorManager.logErrorWithData(
                 ex, "Error in Estimated Item Value renderer",
                 "display" to display,
-                "posLabel" to "Estimated Item Value"
+                "posLabel" to "Estimated Item Value",
             )
         }
     }
@@ -158,9 +185,8 @@ object EstimatedItemValue {
         }
     }
 
-    @HandleEvent
+    @HandleEvent(onlyOnSkyblock = true)
     fun onRenderItemTooltip(event: RenderItemTooltipEvent) {
-        if (!LorenzUtils.inSkyBlock) return
         if (!config.enabled) return
 
         updateItem(event.stack)
@@ -260,5 +286,15 @@ object EstimatedItemValue {
         event.move(3, "misc.itemPriceDataPos", "misc.estimatedItemValues.itemPriceDataPos")
 
         event.move(31, "misc.estimatedItemValues", "inventory.estimatedItemValues")
+    }
+
+    fun renderInNeuStorageOverlay() {
+        if (!config.enabled) return
+
+        // render the estimated item value over NEU Storage
+        GlStateManager.translate(0f, 0f, 200f)
+        tryRendering()
+        GlStateManager.translate(0f, 0f, -200f)
+        renderedItems++
     }
 }
