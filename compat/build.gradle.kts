@@ -22,7 +22,6 @@ java.toolchain {
 
 repositories {
     maven("https://jitpack.io")
-    maven("https://maven.minecraftforge.net")
 }
 
 dependencies {
