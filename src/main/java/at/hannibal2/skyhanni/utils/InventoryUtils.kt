@@ -82,6 +82,8 @@ object InventoryUtils {
 
     val isNeuStorageEnabled get() = NEUScreens.isCustomStorageEnabled()
 
+    fun isInNeuOverlay(): Boolean = NEUScreens.isInNeuOverlay(Minecraft.getMinecraft().currentScreen, ::openInventoryName, ::inStorage)
+
     fun isSlotInPlayerInventory(itemStack: ItemStack): Boolean {
         val screen = Minecraft.getMinecraft().currentScreen as? GuiContainer ?: return false
         val slotUnderMouse = screen.slotUnderMouse ?: return false

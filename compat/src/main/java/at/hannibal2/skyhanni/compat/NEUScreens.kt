@@ -29,6 +29,14 @@ object NEUScreens {
         return false
     }
 
+    // TODO: change this
+    fun isInNeuOverlay(screen: Any?, inventoryName: () -> String, inStorage: () -> Boolean): Boolean {
+        if (!isNeuLoaded) return false
+        if (screen is GuiProfileViewer) return true
+        if (config.tradeMenu.enableCustomTrade && inventoryName().trim().startsWith("You ")) return true
+        return inStorage() && isCustomStorageEnabled()
+    }
+
     fun isProfileViewer(screen: Any?): Boolean = isNeuLoaded && screen is GuiProfileViewer
 
 }

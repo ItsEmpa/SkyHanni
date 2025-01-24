@@ -2,7 +2,6 @@ package at.hannibal2.skyhanni.features.misc.items
 
 import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
-import at.hannibal2.skyhanni.compat.NEUScreens
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.config.features.misc.EstimatedItemValueConfig
 import at.hannibal2.skyhanni.data.jsonobjects.repo.ItemValueCalculationDataJson
@@ -31,9 +30,6 @@ import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.shortFormat
 import at.hannibal2.skyhanni.utils.RenderUtils.renderRenderables
 import at.hannibal2.skyhanni.utils.renderables.Renderable
-import at.hannibal2.skyhanni.utils.system.PlatformUtils
-import io.github.moulberry.notenoughupdates.NotEnoughUpdates
-import io.github.moulberry.notenoughupdates.profileviewer.GuiProfileViewer
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.init.Items
@@ -70,15 +66,6 @@ object EstimatedItemValue {
         itemValueCalculationData = data.valueCalculationData
     }
 
-    private fun isInNeuOverlay(): Boolean {
-        val inPv = Minecraft.getMinecraft().currentScreen is GuiProfileViewer
-        val inTrade = InventoryUtils.openInventoryName().startsWith("You  ")
-        val inNeuTrade = inTrade && NotEnoughUpdates.INSTANCE.config.tradeMenu.enableCustomTrade
-        val inStorage = InventoryUtils.inStorage() && InventoryUtils.isNeuStorageEnabled
-
-        return inPv || inNeuTrade || inStorage
-    }
-
     fun onNeuDrawEquipment(stack: ItemStack) {
         renderedItems++
         updateItem(stack)
@@ -87,8 +74,7 @@ object EstimatedItemValue {
     @HandleEvent(onlyOnSkyblock = true)
     fun onTooltip(event: ItemHoverEvent) {
         if (!config.enabled) return
-        if (!PlatformUtils.isNeuLoaded()) return
-        if (!isInNeuOverlay()) return
+        if (!InventoryUtils.isInNeuOverlay()) return
 
         if (renderedItems == 0) {
             updateItem(event.itemStack)
