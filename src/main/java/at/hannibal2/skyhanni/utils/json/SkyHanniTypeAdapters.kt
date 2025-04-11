@@ -29,13 +29,13 @@ object SkyHanniTypeAdapters {
     val NEU_ITEMSTACK: TypeAdapter<ItemStack> = SimpleStringTypeAdapter(NeuItems::saveNBTData, NeuItems::loadNBTData)
 
     val UUID: TypeAdapter<UUID> = SimpleStringTypeAdapter(
-        { this.toString() },
-        { java.util.UUID.fromString(this) },
+        java.util.UUID::toString,
+        java.util.UUID::fromString,
     )
 
     val INTERNAL_NAME: TypeAdapter<NeuInternalName> = SimpleStringTypeAdapter(
-        { this.asString() },
-        { this.toInternalName() },
+        NeuInternalName::asString,
+        { toInternalName() },
     )
 
     val VEC_STRING: TypeAdapter<LorenzVec> = SimpleStringTypeAdapter(
@@ -43,45 +43,23 @@ object SkyHanniTypeAdapters {
         LorenzVec::decodeFromString,
     )
 
-    val TROPHY_RARITY: TypeAdapter<TrophyRarity> = SimpleStringTypeAdapter(
-        { name },
-        { TrophyRarity.getByName(this) ?: error("Could not parse TrophyRarity from '$this'") },
+    val TROPHY_RARITY = SimpleStringTypeAdapter.forEnum<TrophyRarity>()
+
+    val TIME_MARK: TypeAdapter<SimpleTimeMark> = SimpleTypeAdapter(
+        { value(it.toMillis()) },
+        { nextString().toLong().asTimeMark() },
     )
 
-    val TIME_MARK: TypeAdapter<SimpleTimeMark> = object : TypeAdapter<SimpleTimeMark>() {
-        override fun write(out: JsonWriter, value: SimpleTimeMark) {
-            out.value(value.toMillis())
-        }
-
-        override fun read(reader: JsonReader): SimpleTimeMark {
-            return reader.nextString().toLong().asTimeMark()
-        }
-    }
-
-    val DURATION: TypeAdapter<Duration> = object : TypeAdapter<Duration>() {
-        override fun write(out: JsonWriter, value: Duration) {
-            out.value(value.inWholeMilliseconds)
-        }
-
-        override fun read(reader: JsonReader): Duration {
-            return reader.nextString().toLong().milliseconds
-        }
-    }
-
-    val CROP_TYPE: TypeAdapter<CropType> = SimpleStringTypeAdapter(
-        { name },
-        { CropType.getByName(this) },
+    val DURATION: TypeAdapter<Duration> = SimpleTypeAdapter(
+        { value(it.inWholeMilliseconds) },
+        { nextString().toLong().milliseconds },
     )
 
-    val PEST_TYPE: TypeAdapter<PestType> = SimpleStringTypeAdapter(
-        { name },
-        { PestType.getByName(this) },
-    )
+    val CROP_TYPE = SimpleStringTypeAdapter.forEnum<CropType>()
 
-    val SKYBLOCK_STAT: TypeAdapter<SkyblockStat> = SimpleStringTypeAdapter(
-        { name.lowercase() },
-        { SkyblockStat.getValue(this.uppercase()) },
-    )
+    val PEST_TYPE = SimpleStringTypeAdapter.forEnum<PestType>()
+
+    val SKYBLOCK_STAT = SimpleStringTypeAdapter.forEnum<SkyblockStat>(SkyblockStat.UNKNOWN)
 
     val MOD_VERSION: TypeAdapter<ModVersion> = SimpleStringTypeAdapter(ModVersion::asString, ModVersion::fromString)
 
@@ -89,27 +67,22 @@ object SkyHanniTypeAdapters {
     val ISLAND_TYPE = SimpleStringTypeAdapter.forEnum<IslandType>(IslandType.UNKNOWN)
     val RARITY = SimpleStringTypeAdapter.forEnum<LorenzRarity>()
 
-    val LOCALE_DATE = object : TypeAdapter<LocalDate>() {
-        override fun write(out: JsonWriter, value: LocalDate) {
-            out.value(value.toString())
-        }
+    val LOCALE_DATE = SimpleStringTypeAdapter(
+        LocalDate::toString,
+        LocalDate::parse,
+    )
 
-        override fun read(reader: JsonReader): LocalDate {
-            return LocalDate.parse(reader.nextString())
-        }
+    inline fun <reified T> GsonBuilder.registerTypeAdapter(typeAdapter: TypeAdapter<T>, nullSafe: Boolean = true): GsonBuilder {
+        return registerTypeAdapter(T::class.java, if (nullSafe) typeAdapter.nullSafe() else typeAdapter)
     }
 
     inline fun <reified T> GsonBuilder.registerTypeAdapter(
         crossinline write: (JsonWriter, T) -> Unit,
         crossinline read: (JsonReader) -> T,
-    ): GsonBuilder {
-        this.registerTypeAdapter(
-            T::class.java,
-            object : TypeAdapter<T>() {
-                override fun write(out: JsonWriter, value: T) = write(out, value)
-                override fun read(reader: JsonReader) = read(reader)
-            }.nullSafe(),
+    ): GsonBuilder = registerTypeAdapter<T>(
+        SimpleTypeAdapter(
+            { value -> write(this, value) },
+            { read(this) },
         )
-        return this
-    }
+    )
 }

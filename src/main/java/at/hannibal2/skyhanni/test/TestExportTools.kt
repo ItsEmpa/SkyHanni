@@ -13,11 +13,11 @@ import at.hannibal2.skyhanni.utils.KotlinTypeAdapterFactory
 import at.hannibal2.skyhanni.utils.OSUtils
 import at.hannibal2.skyhanni.utils.json.ItemStackTypeAdapterFactory
 import at.hannibal2.skyhanni.utils.json.NBTTypeAdapter
+import at.hannibal2.skyhanni.utils.json.SkyHanniTypeAdapters.registerTypeAdapter
 import at.hannibal2.skyhanni.utils.json.fromJson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
 import java.io.InputStreamReader
 import java.io.Reader
 
@@ -27,8 +27,8 @@ object TestExportTools {
     private val config get() = SkyHanniMod.feature.dev.debug
 
     val gson = GsonBuilder()
-        .registerTypeAdapterFactory(KotlinTypeAdapterFactory())
-        .registerTypeAdapter(NBTTagCompound::class.java, NBTTypeAdapter)
+        .registerTypeAdapterFactory(KotlinTypeAdapterFactory)
+        .registerTypeAdapter(NBTTypeAdapter)
         .registerTypeAdapterFactory(ItemStackTypeAdapterFactory)
         .create()
 

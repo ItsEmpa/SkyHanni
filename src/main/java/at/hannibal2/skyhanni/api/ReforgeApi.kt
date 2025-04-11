@@ -16,6 +16,7 @@ import at.hannibal2.skyhanni.utils.LorenzRarity
 import at.hannibal2.skyhanni.utils.NeuInternalName
 import at.hannibal2.skyhanni.utils.json.BaseGsonBuilder
 import at.hannibal2.skyhanni.utils.json.SkyHanniTypeAdapters
+import at.hannibal2.skyhanni.utils.json.SkyHanniTypeAdapters.registerTypeAdapter
 import com.google.gson.Gson
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
@@ -159,9 +160,8 @@ object ReforgeApi {
     }
 
     private val reforgeGson: Gson = BaseGsonBuilder.gson()
-        .registerTypeAdapter(SkyblockStat::class.java, SkyHanniTypeAdapters.SKYBLOCK_STAT.nullSafe())
+        .registerTypeAdapter(SkyHanniTypeAdapters.SKYBLOCK_STAT)
         .registerTypeAdapter(
-            SkyblockStatList::class.java,
             object : TypeAdapter<SkyblockStatList>() {
                 override fun write(out: JsonWriter, value: SkyblockStatList) {
                     out.beginObject()

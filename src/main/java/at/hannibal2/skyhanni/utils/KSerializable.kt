@@ -13,6 +13,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
@@ -28,7 +29,7 @@ annotation class KSerializable
 @Target(AnnotationTarget.CLASS)
 annotation class ExtraData
 
-class KotlinTypeAdapterFactory : TypeAdapterFactory {
+object KotlinTypeAdapterFactory : TypeAdapterFactory {
 
     internal data class ParameterInfo(
         val param: KParameter,
@@ -40,12 +41,12 @@ class KotlinTypeAdapterFactory : TypeAdapterFactory {
     @OptIn(ExperimentalStdlibApi::class)
     override fun <T : Any> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
         val kotlinClass = type.rawType.kotlin as KClass<T>
-        if (kotlinClass.findAnnotation<KSerializable>() == null) return null
+        if (!kotlinClass.hasAnnotation<KSerializable>()) return null
         if (!kotlinClass.isData) return null
         val primaryConstructor = kotlinClass.primaryConstructor ?: return null
-        val params = primaryConstructor.parameters.filter { it.findAnnotation<ExtraData>() == null }
+        val params = primaryConstructor.parameters.filter { !it.hasAnnotation<ExtraData>() }
         val extraDataParam = primaryConstructor.parameters
-            .find { it.findAnnotation<ExtraData>() != null && typeOf<MutableMap<String, JsonElement>>().isSubtypeOf(it.type) }
+            .find { it.hasAnnotation<ExtraData>() && typeOf<MutableMap<String, JsonElement>>().isSubtypeOf(it.type) }
             ?.let { param ->
                 param to kotlinClass.memberProperties.find {
                     it.name == param.name && it.returnType.isSubtypeOf(typeOf<Map<String, JsonElement>>())

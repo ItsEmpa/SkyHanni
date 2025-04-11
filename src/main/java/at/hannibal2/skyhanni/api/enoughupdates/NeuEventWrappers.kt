@@ -7,6 +7,7 @@ import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.NumberUtil.isInt
 import at.hannibal2.skyhanni.utils.json.BaseGsonBuilder
+import at.hannibal2.skyhanni.utils.json.SkyHanniTypeAdapters.registerTypeAdapter
 import at.hannibal2.skyhanni.utils.json.fromJson
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
@@ -22,7 +23,6 @@ object NeuEventWrappers {
     private val hypixelApiGson by lazy {
         BaseGsonBuilder.gson()
             .registerTypeAdapter(
-                HypixelApiTrophyFish::class.java,
                 object : TypeAdapter<HypixelApiTrophyFish>() {
                     @Suppress("EmptyFunctionBlock")
                     override fun write(out: JsonWriter, value: HypixelApiTrophyFish) {
