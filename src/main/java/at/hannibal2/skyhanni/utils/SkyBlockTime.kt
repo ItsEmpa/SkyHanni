@@ -3,6 +3,7 @@ package at.hannibal2.skyhanni.utils
 import at.hannibal2.skyhanni.utils.compat.MinecraftCompat
 import java.time.Instant
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * SkyBlockTime Utility
@@ -78,6 +79,10 @@ data class SkyBlockTime(
         const val SKYBLOCK_HOUR_MILLIS = SKYBLOCK_DAY_MILLIS / 24
         private const val SKYBLOCK_MINUTE_MILLIS = SKYBLOCK_HOUR_MILLIS / 60
         private const val SKYBLOCK_SECOND_MILLIS = SKYBLOCK_MINUTE_MILLIS / 60
+
+        inline val Int.skyblockDays get(): Duration = (this * 20).minutes
+        inline val Int.skyblockMonths get(): Duration = (this * 31).skyblockDays
+        inline val Int.skyblockYears get(): Duration = (this * 12).skyblockMonths
 
         @Deprecated("Use fromTimeMark() instead")
         fun fromInstant(instant: Instant): SkyBlockTime =

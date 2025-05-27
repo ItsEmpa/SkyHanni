@@ -28,6 +28,7 @@ import at.hannibal2.skyhanni.utils.NeuInternalName
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.shortFormat
 import at.hannibal2.skyhanni.utils.RenderUtils.renderRenderables
+import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.compat.DrawContextUtils
 import at.hannibal2.skyhanni.utils.renderables.Renderable
 import at.hannibal2.skyhanni.utils.system.PlatformUtils
@@ -38,6 +39,7 @@ import net.minecraft.init.Items
 import net.minecraft.item.ItemStack
 import org.lwjgl.input.Keyboard
 import kotlin.math.roundToLong
+import kotlin.time.Duration.Companion.milliseconds
 
 @SkyHanniModule
 object EstimatedItemValue {
@@ -45,7 +47,7 @@ object EstimatedItemValue {
     val config: EstimatedItemValueConfig get() = SkyHanniMod.feature.inventory.estimatedItemValues
     private var display = emptyList<Renderable>()
     private val cache = mutableMapOf<ItemStack, List<Renderable>>()
-    private var lastToolTipTime = 0L
+    private var lastToolTipTime = SimpleTimeMark.farPast()
     var gemstoneUnlockCosts = HashMap<NeuInternalName, HashMap<String, List<String>>>()
     var bookBundleAmount = mapOf<String, Int>()
     var crimsonPrestigeCosts = mapOf<String, Map<NeuInternalName, Int>>()
@@ -166,7 +168,7 @@ object EstimatedItemValue {
         if (!LorenzUtils.inSkyBlock) return false
         if (!config.enabled) return false
         if (!config.hotkey.isKeyHeld() && !config.alwaysEnabled) return false
-        if (System.currentTimeMillis() > lastToolTipTime + 200) return false
+        if (lastToolTipTime.passedSince() > 200.milliseconds) return false
 
         if (display.isEmpty()) return false
 
@@ -205,7 +207,7 @@ object EstimatedItemValue {
     fun updateItem(item: ItemStack) {
         cache[item]?.let {
             display = it
-            lastToolTipTime = System.currentTimeMillis()
+            lastToolTipTime = SimpleTimeMark.now()
             return
         }
 
@@ -237,7 +239,7 @@ object EstimatedItemValue {
 
         cache[item] = newDisplay
         display = newDisplay
-        lastToolTipTime = System.currentTimeMillis()
+        lastToolTipTime = SimpleTimeMark.now()
     }
 
     private fun ItemStack.shouldIgnoreDraw(): Boolean {

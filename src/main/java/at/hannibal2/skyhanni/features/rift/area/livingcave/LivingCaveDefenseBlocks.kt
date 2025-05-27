@@ -19,16 +19,20 @@ import at.hannibal2.skyhanni.utils.RenderUtils.drawDynamicText
 import at.hannibal2.skyhanni.utils.RenderUtils.drawLineToEye
 import at.hannibal2.skyhanni.utils.RenderUtils.drawWaypointFilled
 import at.hannibal2.skyhanni.utils.RenderUtils.exactLocation
+import at.hannibal2.skyhanni.utils.SimpleTimeMark
+import at.hannibal2.skyhanni.utils.SimpleTimeMark.Companion.fromNow
 import at.hannibal2.skyhanni.utils.SpecialColor.toSpecialColor
 import at.hannibal2.skyhanni.utils.collection.CollectionUtils.editCopy
 import net.minecraft.client.entity.EntityOtherPlayerMP
 import net.minecraft.util.EnumParticleTypes
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object LivingCaveDefenseBlocks {
 
     private val config get() = RiftApi.config.area.livingCave.defenseBlock
-    private var movingBlocks = mapOf<DefenseBlock, Long>()
+    private var movingBlocks = mapOf<DefenseBlock, SimpleTimeMark>()
     private var staticBlocks = emptyList<DefenseBlock>()
 
     class DefenseBlock(val entity: EntityOtherPlayerMP, val location: LorenzVec, var hidden: Boolean = false)
@@ -44,7 +48,7 @@ object LivingCaveDefenseBlocks {
         if (!isEnabled()) return
 
         movingBlocks = movingBlocks.editCopy {
-            values.removeIf { System.currentTimeMillis() > it + 2000 }
+            values.removeIf { it.passedSince() > 2.seconds }
             keys.removeIf { staticBlocks.any { others -> others.location.distance(it.location) < 1.5 } }
         }
 
@@ -85,7 +89,7 @@ object LivingCaveDefenseBlocks {
 
             val defenseBlock = entity?.let { DefenseBlock(it, location) } ?: return
 
-            movingBlocks = movingBlocks.editCopy { this[defenseBlock] = System.currentTimeMillis() + 250 }
+            movingBlocks = movingBlocks.editCopy { this[defenseBlock] = 250.milliseconds.fromNow() }
             if (config.hideParticles) {
                 event.cancel()
             }
@@ -143,7 +147,7 @@ object LivingCaveDefenseBlocks {
 
         for ((block, time) in movingBlocks) {
             if (block.hidden) continue
-            if (time > System.currentTimeMillis()) {
+            if (time.isInFuture()) {
                 val location = block.location
                 event.drawWaypointFilled(location, color)
                 event.drawLineToEye(

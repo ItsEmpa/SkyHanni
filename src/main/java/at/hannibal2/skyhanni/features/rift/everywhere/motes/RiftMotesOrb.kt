@@ -15,9 +15,13 @@ import at.hannibal2.skyhanni.utils.NumberUtil.roundTo
 import at.hannibal2.skyhanni.utils.RegexUtils.matchMatcher
 import at.hannibal2.skyhanni.utils.RenderUtils.drawDynamicText
 import at.hannibal2.skyhanni.utils.RenderUtils.drawWaypointFilled
+import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.collection.CollectionUtils.editCopy
+import at.hannibal2.skyhanni.utils.inPartialSeconds
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import net.minecraft.util.EnumParticleTypes
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object RiftMotesOrb {
@@ -39,8 +43,8 @@ object RiftMotesOrb {
     class MotesOrb(
         var location: LorenzVec,
         var counter: Int = 0,
-        var startTime: Long = System.currentTimeMillis(),
-        var lastTime: Long = System.currentTimeMillis(),
+        val startTime: SimpleTimeMark = SimpleTimeMark.now(),
+        var lastTime: SimpleTimeMark = SimpleTimeMark.now(),
         var isOrb: Boolean = false,
         var pickedUp: Boolean = false,
     )
@@ -57,7 +61,7 @@ object RiftMotesOrb {
                 }
 
             orb.location = location
-            orb.lastTime = System.currentTimeMillis()
+            orb.lastTime = SimpleTimeMark.now()
             orb.counter++
             orb.pickedUp = false
             if (config.hideParticles && orb.isOrb) {
@@ -79,17 +83,17 @@ object RiftMotesOrb {
     fun onRenderWorld(event: SkyHanniRenderWorldEvent) {
         if (!enabled) return
 
-        motesOrbs = motesOrbs.editCopy { removeIf { System.currentTimeMillis() > it.lastTime + 2000 } }
+        motesOrbs = motesOrbs.editCopy { removeIf { it.lastTime.passedSince() > 2.seconds } }
 
         for (orb in motesOrbs) {
-            val ageInSeconds = (System.currentTimeMillis() - orb.startTime).toDouble() / 1000
+            val ageInSeconds = orb.startTime.passedSince().inPartialSeconds
             if (ageInSeconds < 0.5) continue
 
             val particlesPerSecond = (orb.counter.toDouble() / ageInSeconds).roundTo(1)
             if (particlesPerSecond < 60 || particlesPerSecond > 90) continue
             orb.isOrb = true
 
-            if (System.currentTimeMillis() > orb.lastTime + 300) {
+            if (orb.lastTime.passedSince() > 300.milliseconds) {
                 orb.pickedUp = true
             }
 

@@ -55,6 +55,7 @@ import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.init.Blocks
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
+import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object MinionFeatures {
@@ -63,9 +64,9 @@ object MinionFeatures {
     private var lastClickedEntity: LorenzVec? = null
     private var newMinion: LorenzVec? = null
     private var newMinionName: String? = null
-    private var lastMinionOpened = 0L
+    private var lastMinionOpened = SimpleTimeMark.farPast()
 
-    private var lastInventoryClosed = 0L
+    private var lastInventoryClosed = SimpleTimeMark.farPast()
     private var coinsPerDay = ""
 
     private val patternGroup = RepoPattern.group("minion")
@@ -155,8 +156,8 @@ object MinionFeatures {
 
         val loc = lastMinion
         if (loc != null) {
-            val time = config.lastClickedMinion.time * 1_000
-            if (lastMinionOpened + time > System.currentTimeMillis()) {
+            val time = config.lastClickedMinion.time.seconds
+            if (lastMinionOpened.passedSince() > time) {
                 event.drawWaypointFilled(
                     loc.add(-0.5, 0.0, -0.5),
                     color,
@@ -219,7 +220,7 @@ object MinionFeatures {
         lastMinion = entity
         lastClickedEntity = null
         minionInventoryOpen = true
-        lastMinionOpened = 0
+        lastMinionOpened = SimpleTimeMark.farPast()
     }
 
     fun removeBuggedMinions(isCommand: Boolean = false) {
@@ -259,9 +260,9 @@ object MinionFeatures {
         val minions = minions ?: return
 
         minionInventoryOpen = false
-        lastMinionOpened = System.currentTimeMillis()
+        lastMinionOpened = SimpleTimeMark.now()
         coinsPerDay = ""
-        lastInventoryClosed = System.currentTimeMillis()
+        lastInventoryClosed = SimpleTimeMark.now()
 
         MinionCloseEvent().post()
         if (IslandType.PRIVATE_ISLAND.isInIsland()) {
@@ -321,7 +322,7 @@ object MinionFeatures {
     fun onWorldChange() {
         lastClickedEntity = null
         lastMinion = null
-        lastMinionOpened = 0L
+        lastMinionOpened = SimpleTimeMark.farPast()
         minionInventoryOpen = false
         minionStorageInventoryOpen = false
     }
@@ -331,7 +332,7 @@ object MinionFeatures {
         if (!isEnabled()) return
 
         val message = event.message
-        if (minionCoinPattern.matches(message) && System.currentTimeMillis() - lastInventoryClosed < 2_000) {
+        if (minionCoinPattern.matches(message) && lastInventoryClosed.passedSince() < 2.seconds) {
             minions?.get(lastMinion)?.let {
                 it.lastClicked = SimpleTimeMark.now()
             }
@@ -340,7 +341,7 @@ object MinionFeatures {
             minions = minions?.editCopy { remove(lastMinion) }
             lastClickedEntity = null
             lastMinion = null
-            lastMinionOpened = 0L
+            lastMinionOpened = SimpleTimeMark.farPast()
         }
         if (message.startsWith("§bYou placed a minion!") && newMinion != null) {
             minions = minions?.editCopy {

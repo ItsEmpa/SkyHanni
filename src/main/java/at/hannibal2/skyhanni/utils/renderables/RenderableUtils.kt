@@ -9,6 +9,7 @@ import at.hannibal2.skyhanni.utils.NeuItems
 import at.hannibal2.skyhanni.utils.NeuItems.getItemStackOrNull
 import at.hannibal2.skyhanni.utils.RenderUtils.HorizontalAlignment
 import at.hannibal2.skyhanni.utils.RenderUtils.VerticalAlignment
+import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.SoundUtils
 import at.hannibal2.skyhanni.utils.collection.CollectionUtils.putAt
 import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addString
@@ -21,6 +22,7 @@ import java.awt.Color
 import kotlin.math.ceil
 import kotlin.math.min
 import kotlin.reflect.KMutableProperty0
+import kotlin.time.Duration.Companion.milliseconds
 
 @Suppress("TooManyFunctions", "unused", "MemberVisibilityCanBePrivate")
 internal object RenderableUtils {
@@ -319,6 +321,8 @@ internal object RenderableUtils {
         return get(newIndex)
     }
 
+    private var lastButtonClicked = SimpleTimeMark.farPast()
+
     private inline fun <T> createButtonNew(
         label: String,
         current: T?,
@@ -349,7 +353,7 @@ internal object RenderableUtils {
         }
 
         val onClick: (Int) -> Unit = onClick@{ keyCode ->
-            if ((System.currentTimeMillis() - ChatUtils.lastButtonClicked) < 150) return@onClick
+            if (lastButtonClicked.passedSince() < 150.milliseconds) return@onClick
             val next = when (keyCode) {
                 LEFT_MOUSE -> universe.circle(current)
                 RIGHT_MOUSE -> universe.circleBackwards(current)
@@ -357,7 +361,7 @@ internal object RenderableUtils {
             }
             onChange(next)
             SoundUtils.playClickSound()
-            ChatUtils.lastButtonClicked = System.currentTimeMillis()
+            lastButtonClicked = SimpleTimeMark.now()
         }
 
         val clickMap = mapOf(

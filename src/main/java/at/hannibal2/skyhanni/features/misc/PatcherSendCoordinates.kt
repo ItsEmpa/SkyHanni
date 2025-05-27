@@ -17,9 +17,11 @@ import at.hannibal2.skyhanni.utils.RegexUtils.matchMatcher
 import at.hannibal2.skyhanni.utils.RenderUtils.drawColor
 import at.hannibal2.skyhanni.utils.RenderUtils.drawString
 import at.hannibal2.skyhanni.utils.RenderUtils.drawWaypointFilled
+import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.SpecialColor.toSpecialColor
 import at.hannibal2.skyhanni.utils.StringUtils.removeColor
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
+import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object PatcherSendCoordinates {
@@ -56,7 +58,7 @@ object PatcherSendCoordinates {
 
                 split.first().toFloat()
             } else end.toFloat()
-            patcherBeacon.add(PatcherBeacon(LorenzVec(x, y, z), description, System.currentTimeMillis() / 1000))
+            patcherBeacon.add(PatcherBeacon(LorenzVec(x, y, z), description, SimpleTimeMark.now()))
             logger.log("got Patcher coords and username")
         }
     }
@@ -81,11 +83,13 @@ object PatcherSendCoordinates {
         if (!event.isMod(10)) return
 
         val location = LocationUtils.playerLocation()
-        // removed Patcher beacon!
-        patcherBeacon.removeIf { System.currentTimeMillis() / 1000 > it.time + 5 && location.distanceIgnoreY(it.location) < 5 }
 
-        // removed Patcher beacon after time!
-        patcherBeacon.removeIf { System.currentTimeMillis() / 1000 > it.time + config.duration }
+        patcherBeacon.removeIf {
+            val passedSince = it.time.passedSince()
+            (passedSince > 5.seconds && location.distanceIgnoreY(it.location) < 5) ||
+                passedSince > config.duration.seconds
+
+        }
     }
 
     @HandleEvent
@@ -94,7 +98,7 @@ object PatcherSendCoordinates {
         logger.log("Reset everything (world change)")
     }
 
-    data class PatcherBeacon(val location: LorenzVec, val name: String, val time: Long)
+    data class PatcherBeacon(val location: LorenzVec, val name: String, val time: SimpleTimeMark)
 
     @HandleEvent
     fun onConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {

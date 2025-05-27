@@ -14,6 +14,7 @@ import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.LorenzUtils
 import at.hannibal2.skyhanni.utils.ReflectionUtils.makeAccessible
 import at.hannibal2.skyhanni.utils.RenderUtils.renderRenderables
+import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addString
 import at.hannibal2.skyhanni.utils.compat.DrawContextUtils
 import at.hannibal2.skyhanni.utils.compat.MinecraftCompat
@@ -21,6 +22,7 @@ import at.hannibal2.skyhanni.utils.renderables.Renderable
 import at.hannibal2.skyhanni.utils.renderables.addLine
 import net.minecraft.client.Minecraft
 import net.minecraftforge.client.ClientCommandHandler
+import kotlin.time.Duration.Companion.milliseconds
 
 @SkyHanniModule
 object QuickModMenuSwitch {
@@ -32,7 +34,7 @@ object QuickModMenuSwitch {
     private var mods: List<Mod>? = null
 
     private var currentlyOpeningMod = ""
-    private var lastGuiOpen = 0L
+    private var lastGuiOpen = SimpleTimeMark.farPast()
 
     @HandleEvent
     fun onRepoReload(event: RepositoryReloadEvent) {
@@ -138,7 +140,7 @@ object QuickModMenuSwitch {
                 Renderable.string(nameFormat + mod.name),
                 bypassChecks = true,
                 onLeftClick = { open(mod) },
-                condition = { System.currentTimeMillis() > lastGuiOpen + 250 },
+                condition = { lastGuiOpen.passedSince() > 250.milliseconds },
             )
             addLine {
                 add(renderable)
@@ -148,7 +150,7 @@ object QuickModMenuSwitch {
     }
 
     private fun open(mod: Mod) {
-        lastGuiOpen = System.currentTimeMillis()
+        lastGuiOpen = SimpleTimeMark.now()
         currentlyOpeningMod = mod.name
         update()
         try {

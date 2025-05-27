@@ -34,6 +34,8 @@ import at.hannibal2.skyhanni.utils.RenderUtils.drawLineToEye
 import at.hannibal2.skyhanni.utils.RenderUtils.drawWaypointFilled
 import at.hannibal2.skyhanni.utils.RenderUtils.exactLocation
 import at.hannibal2.skyhanni.utils.RenderUtils.exactPlayerEyeLocation
+import at.hannibal2.skyhanni.utils.SimpleTimeMark
+import at.hannibal2.skyhanni.utils.SimpleTimeMark.Companion.fromNow
 import at.hannibal2.skyhanni.utils.SkullTextureHolder
 import at.hannibal2.skyhanni.utils.SpecialColor.toSpecialColor
 import at.hannibal2.skyhanni.utils.collection.CollectionUtils.editCopy
@@ -47,6 +49,7 @@ import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.util.EnumParticleTypes
 import java.awt.Color
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object VampireSlayerFeatures {
@@ -68,7 +71,7 @@ object VampireSlayerFeatures {
 
     private val BLOOD_ICHOR_TEXTURE by lazy { SkullTextureHolder.getTexture("BLOOD_ICHOR") }
     private val KILLER_SPRING_TEXTURE by lazy { SkullTextureHolder.getTexture("KILLER_SPRING") }
-    private var nextClawSend = 0L
+    private var nextClawSend = SimpleTimeMark.farPast()
 
     @HandleEvent
     fun onTick(event: SkyHanniTickEvent) {
@@ -139,12 +142,12 @@ object VampireSlayerFeatures {
 
                 if (!shouldSendTitle) continue
                 DelayedRun.runDelayed(config.twinclawsDelay.milliseconds) {
-                    if (nextClawSend < System.currentTimeMillis()) {
+                    if (nextClawSend.isInPast()) {
                         TitleManager.sendTitle(
                             "§6§lTWINCLAWS",
                             duration = (1750 - config.twinclawsDelay).milliseconds,
                         )
-                        nextClawSend = System.currentTimeMillis() + 5_000
+                        nextClawSend = 5.seconds.fromNow()
                     }
                 }
             }

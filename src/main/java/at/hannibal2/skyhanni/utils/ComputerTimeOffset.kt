@@ -102,11 +102,11 @@ object ComputerTimeOffset {
         null
     }
 
-    private var lastSystemTime = System.currentTimeMillis()
+    private var lastSystemTime = SimpleTimeMark.now()
 
     private fun detectTimeChange() {
-        val currentSystemTime = System.currentTimeMillis()
-        val timeDifference = (currentSystemTime - lastSystemTime).milliseconds
+        val currentSystemTime = SimpleTimeMark.now()
+        val timeDifference = (currentSystemTime - lastSystemTime)
         lastSystemTime = currentSystemTime
 
         val expectedDuration = 1.seconds

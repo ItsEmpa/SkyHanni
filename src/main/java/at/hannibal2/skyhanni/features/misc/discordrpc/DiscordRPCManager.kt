@@ -45,7 +45,7 @@ object DiscordRPCManager {
     val config get() = feature.gui.discordRPC
 
     private var client: KDiscordIPC? = null
-    private var startTimestamp: Long = 0
+    private var startTimestamp = SimpleTimeMark.now()
     private var started = false
     private var nextUpdate: SimpleTimeMark = SimpleTimeMark.farPast()
 
@@ -60,7 +60,7 @@ object DiscordRPCManager {
                 if (isConnected()) return@launch
 
                 updateDebugStatus("Starting...")
-                startTimestamp = System.currentTimeMillis()
+                startTimestamp = SimpleTimeMark.now()
                 client = KDiscordIPC(APPLICATION_ID.toString())
                 setup(fromCommand)
             } catch (e: Throwable) {
@@ -158,7 +158,7 @@ object DiscordRPCManager {
                 details = getStatusByConfigId(config.firstLine.get()).getDisplayString(),
                 state = getStatusByConfigId(config.secondLine.get()).getDisplayString(),
                 timestamps = Activity.Timestamps(
-                    start = startTimestamp,
+                    start = startTimestamp.toMillis(),
                     end = null
                 ),
                 assets = Activity.Assets(

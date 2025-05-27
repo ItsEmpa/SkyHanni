@@ -18,16 +18,18 @@ import at.hannibal2.skyhanni.utils.NumberUtil.formatLong
 import at.hannibal2.skyhanni.utils.NumberUtil.isFormatNumber
 import at.hannibal2.skyhanni.utils.NumberUtil.percentWithColorCode
 import at.hannibal2.skyhanni.utils.RenderUtils.renderRenderable
+import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.StringUtils.removeColor
 import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addItemStack
 import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addString
 import at.hannibal2.skyhanni.utils.renderables.Renderable
 import net.minecraft.client.Minecraft
+import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object CollectionTracker {
 
-    private const val RECENT_GAIN_TIME = 1_500
+    private val RECENT_GAIN_TIME = 1.5.seconds
 
     private var display: Renderable? = null
 
@@ -39,7 +41,7 @@ object CollectionTracker {
     private var lastAmountInInventory = -1
 
     private var recentGain = 0
-    private var lastGainTime = -1L
+    private var lastGainTime = SimpleTimeMark.farPast()
 
     private val CACTUS = "CACTUS".toInternalName()
     private val CACTUS_GREEN = "INK_SACK-2".toInternalName()
@@ -211,7 +213,7 @@ object CollectionTracker {
     }
 
     private fun updateGain() {
-        if (recentGain != 0 && System.currentTimeMillis() > lastGainTime + RECENT_GAIN_TIME) {
+        if (recentGain != 0 && lastGainTime.passedSince() > RECENT_GAIN_TIME) {
             recentGain = 0
             updateDisplay()
         }
@@ -220,10 +222,10 @@ object CollectionTracker {
     private fun gainItems(amount: Int) {
         itemAmount += amount
 
-        if (System.currentTimeMillis() > lastGainTime + RECENT_GAIN_TIME) {
+        if (lastGainTime.passedSince() > RECENT_GAIN_TIME) {
             recentGain = 0
         }
-        lastGainTime = System.currentTimeMillis()
+        lastGainTime = SimpleTimeMark.now()
         recentGain += amount
 
         updateDisplay()

@@ -3,6 +3,7 @@ package at.hannibal2.skyhanni.utils
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 
+// TODO: Use SimpleTimeMark instead of System.currentTimeMillis()
 object ItemBlink {
 
     private val offsets = mutableMapOf<Item, Long>()

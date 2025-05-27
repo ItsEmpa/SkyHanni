@@ -21,14 +21,16 @@ import at.hannibal2.skyhanni.utils.LorenzVec
 import at.hannibal2.skyhanni.utils.RegexUtils.matchMatcher
 import at.hannibal2.skyhanni.utils.RegexUtils.matches
 import at.hannibal2.skyhanni.utils.RenderUtils.renderStrings
+import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.SkyBlockTime
+import at.hannibal2.skyhanni.utils.SkyBlockTime.Companion.skyblockDays
 import at.hannibal2.skyhanni.utils.TimeUtils.format
 import at.hannibal2.skyhanni.utils.collection.CollectionUtils.sorted
 import at.hannibal2.skyhanni.utils.collection.CollectionUtils.sortedDesc
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import net.minecraft.entity.item.EntityArmorStand
 import java.util.Collections
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration
 
 @SkyHanniModule
 object KingTalismanHelper {
@@ -160,7 +162,7 @@ object KingTalismanHelper {
         }
 
         allKingsDisplay = buildList {
-            var farDisplay_: String? = null
+            var farDisplay: String? = null
 
             val currentKing = getCurrentKing()
             for ((king, timeUntil) in getKingTimes()) {
@@ -170,24 +172,24 @@ object KingTalismanHelper {
                 val current = king == currentKing
 
                 val missingTimeFormat = if (current) {
-                    val changedTime = timeUntil - 1000 * 60 * 20 * (kingCircles.size - 1)
-                    val time = changedTime.milliseconds.format(maxUnits = 2)
+                    val changedTime = timeUntil - (kingCircles.size - 1).skyblockDays
+                    val time = changedTime.format(maxUnits = 2)
                     "§7(§b$time remaining§7)"
                 } else {
-                    val time = timeUntil.milliseconds.format(maxUnits = 2)
+                    val time = timeUntil.format(maxUnits = 2)
                     "§7(§bin $time§7)"
                 }
 
                 val currentString = if (current) "§6King " else ""
                 if (missing && current) {
-                    farDisplay_ = "§cNext missing king: §7$king §eNow $missingTimeFormat"
+                    farDisplay = "§cNext missing king: §7$king §eNow $missingTimeFormat"
                 }
 
                 val timeString = if (missing) " §cMissing $missingTimeFormat" else ""
 
                 add("§7$currentString$king$missingString$timeString")
             }
-            farDisplay = farDisplay_ ?: nextMissingText()
+            this@KingTalismanHelper.farDisplay = farDisplay ?: nextMissingText()
         }
     }
 
@@ -195,25 +197,26 @@ object KingTalismanHelper {
         val storage = storage ?: error("profileSpecific is null")
         val kingsTalkedTo = storage.kingsTalkedTo
         val (nextKing, until) = getKingTimes().filter { it.key !in kingsTalkedTo }.sorted().firstNotNullOf { it }
-        val time = until.milliseconds.format(maxUnits = 2)
+        val time = until.format(maxUnits = 2)
 
         return "§cNext missing king: §7$nextKing §7(§bin $time§7)"
     }
 
-    private fun getKingTimes(): MutableMap<String, Long> {
+    private fun getKingTimes(): MutableMap<String, Duration> {
         val currentOffset = getCurrentOffset() ?: 0
-        val oneSBDay = 1000 * 60 * 20
-        val oneCircleTime = oneSBDay * kingCircles.size
-        val kingTime = mutableMapOf<String, Long>()
+
+        val oneCircleTime = kingCircles.size.skyblockDays
+        val kingTime = mutableMapOf<String, Duration>()
         for ((index, king) in kingCircles.withIndex()) {
 //             val startTime = SkyBlockTime(day = index + 2 - kingCircles.size)
 //             val startTime = SkyBlockTime(day = index - kingCircles.size)
             val startTime = SkyBlockTime(day = index + currentOffset - kingCircles.size)
-            var timeNext = startTime.toMillis()
-            while (timeNext < System.currentTimeMillis()) {
+            var timeNext = startTime.toTimeMark()
+            val now = SimpleTimeMark.now()
+            while (timeNext < now) {
                 timeNext += oneCircleTime
             }
-            val timeUntil = timeNext - System.currentTimeMillis()
+            val timeUntil = timeNext - now
             kingTime[king] = timeUntil
         }
         return kingTime
