@@ -7,7 +7,9 @@ import java.util.EnumMap
 import java.util.PriorityQueue
 import java.util.Queue
 import java.util.WeakHashMap
+import kotlin.collections.indexOfFirst
 import kotlin.math.ceil
+import kotlin.collections.indexOfFirst as indexOfFirstNotNull
 
 object CollectionUtils {
 
@@ -279,6 +281,12 @@ object CollectionUtils {
             }
         }
         return destination
+    }
+
+    fun <T> MutableList<T>.removeFirstMatches(condition: (T) -> Boolean): T? {
+        val indexOf = indexOfFirstNotNull(condition)
+        if (indexOf == -1) return null
+        return removeAt(indexOf)
     }
 
     inline fun <T, C : Number, D : Number, R : Number> Iterable<T>.sumOfPair(
